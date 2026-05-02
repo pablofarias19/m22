@@ -6768,7 +6768,7 @@ function encuestaRenderFormulario(content, enc, encuestaId, loggedUserId) {
     }
 
     // Botón compartir en la cabecera de la encuesta
-    html += '<div style="margin-bottom:12px;"><button onclick="compartirContenido(\'encuesta\',' + (enc.id||0) + ',\'' + (enc.titulo||'').replace(/'/g,'') + '\')" style="background:none;border:1px solid #1B3B6F;color:#1B3B6F;border-radius:8px;padding:5px 12px;cursor:pointer;font-size:12px;font-weight:600;">📤 Compartir encuesta</button></div>';
+    html += '<div style="margin-bottom:12px;"><button onclick="compartirContenido(\'encuesta\',' + (enc.id||0) + ',\'' + (enc.titulo||'').replace(/'/g,'') + '\',\'' + (enc.localidad||'').replace(/'/g,'') + '\')" style="background:none;border:1px solid #1B3B6F;color:#1B3B6F;border-radius:8px;padding:5px 12px;cursor:pointer;font-size:12px;font-weight:600;">📤 Compartir encuesta</button></div>';
 
     if (total > 0) {
         html += '<div style="font-size:11px;color:#888;margin-bottom:14px;font-weight:600;letter-spacing:0.3px;">'
@@ -6985,10 +6985,12 @@ function encuestaRenderResultados(container, totalPart, preguntas, tituloExtra, 
 }
 
 // ── Compartir en redes sociales ────────────────────────────────────────────────
-function compartirContenido(tipo, id, titulo) {
+function compartirContenido(tipo, id, titulo, localidad) {
     var baseUrl = window.location.origin;
     var url = baseUrl + '/' + encodeURIComponent(tipo) + '?id=' + id;
-    var texto = titulo ? titulo + ' — MAPITA' : 'Descubrí esto en MAPITA';
+    var texto = titulo ? titulo : 'Descubrí esto en MAPITA';
+    if (localidad) texto += ' en ' + localidad;
+    texto += ' — MAPITA';
 
     // Web Share API (móvil nativo)
     if (navigator.share) {
@@ -7325,7 +7327,7 @@ function mostrarMarcadoresEncuestas(encuestas) {
             popHtml += '<button onclick="abrirEncuesta(' + enc.id + ',\'' + encTituloSafe + '\')" style="width:100%;padding:9px 8px;background:#f39c12;color:white;border:none;border-radius:8px;cursor:pointer;font-size:13px;font-weight:700;margin-bottom:6px;">📋 Responder</button>';
         }
         // Botón Compartir
-        popHtml += '<button onclick="compartirContenido(\'encuesta\',' + enc.id + ',\'' + encTituloSafe + '\')" style="width:100%;padding:7px 8px;background:#fff;color:#1B3B6F;border:1.5px solid #1B3B6F;border-radius:8px;cursor:pointer;font-size:12px;font-weight:600;margin-bottom:6px;">📤 Compartir encuesta</button>';
+        popHtml += '<button onclick="compartirContenido(\'encuesta\',' + enc.id + ',\'' + encTituloSafe + '\',\'' + (enc.localidad || '').replace(/'/g,'') + '\')" style="width:100%;padding:7px 8px;background:#fff;color:#1B3B6F;border:1.5px solid #1B3B6F;border-radius:8px;cursor:pointer;font-size:12px;font-weight:600;margin-bottom:6px;">📤 Compartir encuesta</button>';
         popHtml += buildWTPopupSection('encuesta', enc.id, enc.titulo);
         popHtml += '</div></div>';
 

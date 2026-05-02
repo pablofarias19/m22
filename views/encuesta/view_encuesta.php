@@ -13,7 +13,7 @@ $id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
 if ($id <= 0) { header("Location: /"); exit(); }
 
 $db   = getDbConnection();
-$stmt = $db->prepare("SELECT * FROM encuestas WHERE id = ? AND activa = 1");
+$stmt = $db->prepare("SELECT * FROM encuestas WHERE id = ? AND activo = 1");
 $stmt->execute([$id]);
 $encuesta = $stmt->fetch(PDO::FETCH_ASSOC);
 if (!$encuesta) { header("Location: /"); exit(); }
@@ -58,9 +58,9 @@ if (!empty($encuesta['fecha_expiracion'])) {
     } catch(Exception $e){}
 }
 
-// ── Localidad via reverse geocoding (usa lat/lng de la encuesta) ──────────────
-$localidad = '';
-if (!empty($encuesta['lat']) && !empty($encuesta['lng'])
+// ── Localidad via campo DB o reverse geocoding (usa lat/lng de la encuesta) ────
+$localidad = $encuesta['localidad'] ?? '';
+if (empty($localidad) && !empty($encuesta['lat']) && !empty($encuesta['lng'])
     && $encuesta['lat'] != 0 && $encuesta['lng'] != 0) {
     try {
         $geoUrl = 'https://nominatim.openstreetmap.org/reverse?format=json'
@@ -77,6 +77,13 @@ if (!empty($encuesta['lat']) && !empty($encuesta['lng'])
             $addr = $geo['address'] ?? [];
             $localidad = $addr['city'] ?? $addr['town'] ?? $addr['village']
                       ?? $addr['municipality'] ?? $addr['county'] ?? '';
+            // Guardar localidad en DB para no repetir geocoding en futuros accesos
+            if ($localidad) {
+                try {
+                    $stmtLoc = $db->prepare("UPDATE encuestas SET localidad = ? WHERE id = ? AND (localidad IS NULL OR localidad = '')");
+                    $stmtLoc->execute([$localidad, $id]);
+                } catch(Exception $eDb){}
+            }
         }
     } catch(Exception $e){}
 }

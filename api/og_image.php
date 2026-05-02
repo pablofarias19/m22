@@ -246,18 +246,35 @@ if (($type === 'business' && $id > 0) || ($type === 'brand' && $brandId > 0)
 
         // ── ENCUESTA ──────────────────────────────────────────────────────────
         } elseif ($type === 'encuesta' && $id > 0) {
-            $stmt = $db->prepare("
+            $stmtSql = "
                 SELECT e.titulo, e.descripcion, e.fecha_expiracion, e.imagen,
                        COUNT(DISTINCT p.id) AS nPreg,
                        COUNT(DISTINCT par.user_id) AS nPart
                 FROM encuestas e
                 LEFT JOIN preguntas_encuesta p ON p.encuesta_id = e.id
                 LEFT JOIN encuesta_participaciones par ON par.encuesta_id = e.id
-                WHERE e.id = ? AND e.activa = 1
+                WHERE e.id = ? AND e.activo = 1
                 GROUP BY e.id
                 LIMIT 1
-            ");
-            $stmt->execute([$id]);
+            ";
+            $stmt = $db->prepare($stmtSql);
+            try {
+                $stmt->execute([$id]);
+            } catch (\PDOException $eExec) {
+                // Si falla por columna imagen aún no migrada, reintentar sin ella
+                $stmt = $db->prepare("
+                    SELECT e.titulo, e.descripcion, e.fecha_expiracion, NULL AS imagen,
+                           COUNT(DISTINCT p.id) AS nPreg,
+                           COUNT(DISTINCT par.user_id) AS nPart
+                    FROM encuestas e
+                    LEFT JOIN preguntas_encuesta p ON p.encuesta_id = e.id
+                    LEFT JOIN encuesta_participaciones par ON par.encuesta_id = e.id
+                    WHERE e.id = ? AND e.activo = 1
+                    GROUP BY e.id
+                    LIMIT 1
+                ");
+                $stmt->execute([$id]);
+            }
             $row = $stmt->fetch(PDO::FETCH_ASSOC);
             if ($row) {
                 $titulo    = $row['titulo'];
