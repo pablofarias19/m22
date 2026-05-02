@@ -247,7 +247,7 @@ if (($type === 'business' && $id > 0) || ($type === 'brand' && $brandId > 0)
         // ── ENCUESTA ──────────────────────────────────────────────────────────
         } elseif ($type === 'encuesta' && $id > 0) {
             $stmt = $db->prepare("
-                SELECT e.titulo, e.descripcion, e.fecha_expiracion,
+                SELECT e.titulo, e.descripcion, e.fecha_expiracion, e.imagen,
                        COUNT(DISTINCT p.id) AS nPreg,
                        COUNT(DISTINCT par.user_id) AS nPart
                 FROM encuestas e
@@ -285,6 +285,15 @@ if (($type === 'business' && $id > 0) || ($type === 'brand' && $brandId > 0)
                     ? mb_substr(strip_tags($row['descripcion']), 0, 110)
                     : 'Participá en esta encuesta · mapita.com.ar';
                 $colorAcento = [95, 39, 205];   // encuesta purple
+
+                // Usar imagen de la encuesta como fondo cuando está disponible
+                if (!empty($row['imagen'])) {
+                    $imgFile = basename($row['imagen']);
+                    if ($imgFile && preg_match('/^[\w\-]+\.(jpg|jpeg|png|gif|webp)$/i', $imgFile)) {
+                        $candidate = __DIR__ . '/../uploads/encuestas/' . $imgFile;
+                        if (file_exists($candidate)) { $fotoPath = $candidate; }
+                    }
+                }
             }
         }
 

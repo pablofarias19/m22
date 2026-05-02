@@ -109,7 +109,9 @@ $og_desc_body   = !empty($encuesta['descripcion'])
     : '¡Tu opinión importa! Participá ahora en Mapita.';
 $og_desc = $og_desc_header . ' — ' . $og_desc_body;
 
-$og_image  = $scheme . '://' . $host . '/api/og_image.php?type=encuesta&id=' . $id;
+$og_image = !empty($encuesta['imagen']) && preg_match('/^[\w\-]+\.(jpg|jpeg|png|gif|webp)$/i', $encuesta['imagen'])
+    ? $scheme . '://' . $host . '/uploads/encuestas/' . rawurlencode($encuesta['imagen'])
+    : $scheme . '://' . $host . '/api/og_image.php?type=encuesta&id=' . $id;
 $og_url    = $scheme . '://' . $host . '/encuesta?id=' . $id;
 $mapUrl    = '/?ver=encuesta&id=' . $id;
 $shareText = urlencode('📊 ' . $encuesta['titulo']

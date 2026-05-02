@@ -6749,6 +6749,10 @@ function encuestaRenderFormulario(content, enc, encuestaId, loggedUserId) {
              + '<button onclick="document.getElementById(\'encuesta-modal-overlay\').remove()" style="background:none;border:none;font-size:22px;cursor:pointer;color:#aaa;padding:0 4px;line-height:1;flex-shrink:0;">✕</button>'
              + '</div>';
 
+    if (enc.imagen) {
+        html += '<img src="/uploads/encuestas/' + encodeURIComponent(enc.imagen) + '" alt="' + (enc.titulo || '').replace(/"/g, '&quot;') + '" loading="lazy" style="width:100%;display:block;max-height:180px;object-fit:cover;border-radius:10px;margin-bottom:14px;">';
+    }
+
     if (enc.descripcion) {
         html += '<p style="color:#666;margin:0 0 16px;font-size:13px;line-height:1.5;">' + enc.descripcion + '</p>';
     }
@@ -7311,6 +7315,7 @@ function mostrarMarcadoresEncuestas(encuestas) {
             + '<div style="background:linear-gradient(135deg,#f39c12,#e67e22);color:white;padding:14px 14px 12px;">'
             + '<strong style="font-size:14px;line-height:1.3;display:block;">📋 ' + enc.titulo + '</strong></div>'
             + '<div style="padding:10px 12px 4px">';
+        if (enc.imagen) popHtml += '<img src="/uploads/encuestas/' + encodeURIComponent(enc.imagen) + '" alt="' + encTituloSafe + '" loading="lazy" style="width:100%;display:block;max-height:120px;object-fit:cover;border-radius:6px;margin-bottom:8px;">';
         if (enc.descripcion) popHtml += '<p style="margin:0 0 6px;font-size:12px;color:#555;line-height:1.4">' + enc.descripcion.substring(0,90) + (enc.descripcion.length > 90 ? '…' : '') + '</p>';
         if (enc.fecha_expiracion) popHtml += '<p style="margin:0 0 8px;font-size:11px;color:#999;">📅 Vence: ' + enc.fecha_expiracion + '</p>';
         // Botón Responder
