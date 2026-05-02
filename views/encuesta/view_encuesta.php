@@ -192,7 +192,7 @@ a{text-decoration:none;color:inherit}
   font-size:.8em;font-weight:700;margin-bottom:10px;
 }
 .hero-desc{
-  font-size:.9em;color:rgba(255,255,255,.8);line-height:1.7;margin-bottom:20px;
+  font-size:.9em;color:#fff;line-height:1.7;margin-bottom:20px;
   max-width:560px;
 }
 .stats-strip{
@@ -200,9 +200,9 @@ a{text-decoration:none;color:inherit}
 }
 .stat-pill{
   display:flex;align-items:center;gap:8px;
-  background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.22);
+  background:rgba(255,255,255,.28);border:1px solid rgba(255,255,255,.38);
   color:#fff;padding:8px 16px;border-radius:20px;font-size:.82em;font-weight:700;
-  backdrop-filter:blur(4px);
+  backdrop-filter:blur(4px);text-shadow:0 1px 3px rgba(0,0,0,.35);
 }
 .stat-pill-num{font-size:1.15em;font-weight:900}
 .hero-card-bump{
@@ -282,6 +282,12 @@ a{text-decoration:none;color:inherit}
   transition:all .15s;font-family:inherit;
 }
 .escala10-btn:hover,.escala10-btn.selected{color:#fff;border-color:transparent;transform:scale(1.1)}
+/* focus-visible para accesibilidad de teclado */
+button:focus-visible,.opt-btn:focus-visible,.sino-btn:focus-visible,
+.escala-btn:focus-visible,.escala10-btn:focus-visible,.btn-enviar:focus-visible,
+.btn-login:focus-visible,.share-btn:focus-visible{
+  outline:3px solid #6c5ce7;outline-offset:2px;
+}
 /* Texto libre */
 .texto-input{
   width:100%;padding:12px 14px;border:2px solid #e5e7eb;border-radius:12px;
@@ -301,6 +307,21 @@ a{text-decoration:none;color:inherit}
 }
 .btn-enviar:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 10px 28px rgba(108,92,231,.5)}
 .btn-enviar:disabled{opacity:.5;cursor:not-allowed}
+
+/* ── LINK CTA (modo link externo sin login) ── */
+.link-cta-block{
+  padding:28px 24px;text-align:center;
+  background:linear-gradient(180deg,#fff 0%,#eff6ff 100%);
+  border-bottom:1px solid #f3f4f6;
+}
+.btn-link-externo{
+  display:inline-flex;align-items:center;gap:10px;
+  padding:16px 32px;border-radius:16px;font-size:1em;font-weight:800;
+  background:linear-gradient(145deg,#1B3B6F,#2563eb);
+  color:#fff;box-shadow:0 4px 16px rgba(37,99,235,.35);
+  text-decoration:none;transition:all .15s;
+}
+.btn-link-externo:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(37,99,235,.45)}
 
 /* ── LOGIN REQUIRED ── */
 .login-required{
@@ -385,14 +406,13 @@ a{text-decoration:none;color:inherit}
 <!-- ── TOP BAR ── -->
 <nav class="top-bar">
   <span class="logo">🗺 <em>Mapita</em> <span style="color:#94a3b8;font-weight:500">Encuestas</span></span>
-  <a href="/" class="back">← Ver mapa</a>
+  <a href="<?= htmlspecialchars($mapUrl) ?>" class="back">← Ver mapa</a>
 </nav>
 
 <!-- ── HERO ── -->
 <div class="hero">
   <div class="hero-inner">
     <div class="hero-badge">📊 Encuesta comunitaria</div>
-    <div class="hero-icon">📊</div>
     <h1 class="hero-title"><?= htmlspecialchars($encuesta['titulo']) ?></h1>
     <?php if ($localidad): ?>
     <div class="hero-localidad">📍 <?= htmlspecialchars($localidad) ?></div>
@@ -416,6 +436,18 @@ a{text-decoration:none;color:inherit}
       </div>
       <?php endif; ?>
     </div>
+    <?php
+    $imgSafe = !empty($encuesta['imagen']) ? basename($encuesta['imagen']) : '';
+    if ($imgSafe && preg_match('/^[\w\-]+\.(jpg|jpeg|png|gif|webp)$/i', $imgSafe)):
+    ?>
+    <div style="margin:0 -20px -1px;max-height:240px;overflow:hidden;border-radius:0;">
+      <img src="/uploads/encuestas/<?= rawurlencode($imgSafe) ?>"
+           alt="<?= htmlspecialchars($encuesta['titulo']) ?>"
+           style="width:100%;object-fit:cover;max-height:240px;display:block;"
+           loading="lazy"
+           onerror="this.parentElement.style.display='none'">
+    </div>
+    <?php endif; ?>
     <div class="hero-card-bump"></div>
   </div>
 </div>
@@ -426,6 +458,18 @@ a{text-decoration:none;color:inherit}
 
     <?php if ($expirada): ?>
     <div class="expired-banner">⛔ Esta encuesta ha cerrado. Ya no acepta respuestas.</div>
+
+    <?php elseif (!empty($encuesta['link'])): ?>
+    <!-- Modo link externo: mostrar CTA directo sin requerir login -->
+    <div class="link-cta-block">
+      <div style="font-size:2.2rem;margin-bottom:12px">📋</div>
+      <p style="font-weight:700;font-size:1em;color:#1a1a2e;margin-bottom:6px">Esta encuesta se realiza en un sitio externo</p>
+      <p style="font-size:.84em;color:#6b7280;margin-bottom:20px">Hacé clic para participar. Se abrirá en una nueva pestaña.</p>
+      <a href="<?= htmlspecialchars($encuesta['link']) ?>" target="_blank" rel="noopener noreferrer"
+         class="btn-link-externo" title="Se abre en una nueva pestaña">
+        Ir a la encuesta ↗
+      </a>
+    </div>
 
     <?php elseif (!$userId): ?>
     <!-- No logueado: invitar a iniciar sesión -->
@@ -467,28 +511,29 @@ a{text-decoration:none;color:inherit}
           </div>
 
           <?php if ($tipo === 'si_no'): ?>
-          <div class="sino-grid">
-            <button type="button" class="sino-btn si" onclick="selOpcion(<?= $pid ?>,'Sí',this)">✅ Sí</button>
-            <button type="button" class="sino-btn no" onclick="selOpcion(<?= $pid ?>,'No',this)">❌ No</button>
+          <div class="sino-grid" role="group" aria-label="Sí o No">
+            <button type="button" class="sino-btn si" aria-pressed="false" onclick="selOpcion(<?= $pid ?>,'Sí',this)">✅ Sí</button>
+            <button type="button" class="sino-btn no" aria-pressed="false" onclick="selOpcion(<?= $pid ?>,'No',this)">❌ No</button>
           </div>
 
           <?php elseif ($tipo === 'escala'): ?>
-          <div class="escala-grid">
+          <div class="escala-grid" role="group" aria-label="Escala del 1 al 5">
             <?php for ($s = 1; $s <= 5; $s++): ?>
-            <button type="button" class="escala-btn" onclick="selOpcion(<?= $pid ?>,'<?= $s ?>',this)">
+            <button type="button" class="escala-btn" aria-pressed="false" aria-label="<?= $s ?> de 5" onclick="selOpcion(<?= $pid ?>,'<?= $s ?>',this)">
               <?= str_repeat('★', $s) . str_repeat('☆', 5-$s) ?>
             </button>
             <?php endfor; ?>
           </div>
 
           <?php elseif ($tipo === 'escala_10'): ?>
-          <div class="escala10-grid">
+          <div class="escala10-grid" role="group" aria-label="Escala del 1 al 10">
             <?php
             $colors = ['#ef4444','#f97316','#f97316','#f59e0b','#f59e0b','#84cc16','#84cc16','#22c55e','#10b981','#059669'];
             for ($s = 1; $s <= 10; $s++):
             ?>
             <button type="button" class="escala10-btn"
-              style="--c:<?= $colors[$s-1] ?>"
+              data-color="<?= $colors[$s-1] ?>"
+              aria-pressed="false" aria-label="<?= $s ?> de 10"
               onclick="selOpcion(<?= $pid ?>,'<?= $s ?>',this)"><?= $s ?></button>
             <?php endfor; ?>
           </div>
@@ -498,9 +543,9 @@ a{text-decoration:none;color:inherit}
             oninput="selTexto(<?= $pid ?>,this.value)"></textarea>
 
           <?php else: /* opcion_multiple */ ?>
-          <div class="options-grid">
+          <div class="options-grid" role="group" aria-label="Opciones">
             <?php foreach ($opts as $opt): ?>
-            <button type="button" class="opt-btn"
+            <button type="button" class="opt-btn" aria-pressed="false"
               onclick="selOpcion(<?= $pid ?>,<?= json_encode($opt) ?>,this)"><?= htmlspecialchars($opt) ?></button>
             <?php endforeach; ?>
           </div>
@@ -547,7 +592,7 @@ a{text-decoration:none;color:inherit}
 
   <!-- Footer -->
   <div class="page-footer" style="margin-top:14px">
-    <div><a href="/" class="mapita-badge">🗺️ Ver más encuestas y eventos en Mapita</a></div>
+    <div><a href="<?= htmlspecialchars($mapUrl) ?>" class="mapita-badge">🗺️ Ver más encuestas y eventos en Mapita</a></div>
     <p>© Mapita · La voz de tu comunidad en el mapa</p>
   </div>
 </div>
@@ -563,11 +608,24 @@ function selOpcion(pid, valor, btn) {
     respuestas[pid] = valor;
     // Limpiar selección previa en el mismo bloque
     var bloque = btn.closest('.question-block');
-    bloque.querySelectorAll('button').forEach(function(b){ b.classList.remove('selected'); });
+    bloque.querySelectorAll('button').forEach(function(b){
+        b.classList.remove('selected');
+        b.setAttribute('aria-pressed', 'false');
+        // Escala 10: restablecer color de fondo
+        if (b.classList.contains('escala10-btn')) {
+            b.style.background = '';
+            b.style.color = '';
+            b.style.borderColor = '';
+        }
+    });
     btn.classList.add('selected');
-    // Escala 10: color dinámico
+    btn.setAttribute('aria-pressed', 'true');
+    // Escala 10: color dinámico usando data-color (compatible con todos los browsers)
     if (btn.classList.contains('escala10-btn')) {
-        btn.style.background = btn.style.getPropertyValue('--c') || '#6c5ce7';
+        var c = btn.dataset.color || '#6c5ce7';
+        btn.style.background = c;
+        btn.style.borderColor = c;
+        btn.style.color = '#fff';
     }
 }
 
