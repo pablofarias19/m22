@@ -67,6 +67,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $lng              = $_POST['lng'] ?? null;
     $fecha_expiracion = $_POST['fecha_expiracion'] ?? null;
     $youtube_link     = trim($_POST['youtube_link'] ?? '');
+    $link             = trim($_POST['link'] ?? '');
     $detalle_activo   = isset($_POST['detalle_activo']) ? 1 : 0;
     // Construir CSV de gráficos seleccionados
     $graficos_raw    = $_POST['graficos_config'] ?? '';
@@ -109,6 +110,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         if (!$error) {
+            // Manejar subida de imagen
+            $imagen_nueva = null;
+            if (isset($_FILES['imagen']) && $_FILES['imagen']['size'] > 0) {
+                $imagen_nueva = Encuesta::uploadImage($_FILES['imagen']);
+                if (!$imagen_nueva) {
+                    $error = "Error al subir la imagen. Asegúrate de que sea JPG, PNG, WEBP o GIF y pese menos de 5 MB.";
+                }
+            }
+
+            if (!$error) {
             if ($action === 'create') {
                 $result = Encuesta::create([
                     'titulo'           => $titulo,
@@ -116,7 +127,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     'lat'              => $lat,
                     'lng'              => $lng,
                     'fecha_expiracion' => $fecha_expiracion,
+                    'link'             => $link ?: null,
                     'youtube_link'     => $youtube_link ?: null,
+                    'imagen'           => $imagen_nueva,
                     'detalle_activo'   => $detalle_activo,
                     'graficos_config'  => $graficos_config,
                 ]);
@@ -133,16 +146,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 }
 
             } elseif ($action === 'edit' && $id > 0) {
-                $result = Encuesta::update($id, [
+                $updateData = [
                     'titulo'           => $titulo,
                     'descripcion'      => $descripcion,
                     'lat'              => $lat,
                     'lng'              => $lng,
                     'fecha_expiracion' => $fecha_expiracion,
+                    'link'             => $link ?: null,
                     'youtube_link'     => $youtube_link ?: null,
                     'detalle_activo'   => $detalle_activo,
                     'graficos_config'  => $graficos_config,
-                ]);
+                ];
+                if ($imagen_nueva) {
+                    $updateData['imagen'] = $imagen_nueva;
+                }
+                $result = Encuesta::update($id, $updateData);
 
                 if ($result) {
                     // Reemplazar preguntas si se enviaron nuevas
@@ -157,6 +175,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $error = "Error al actualizar la encuesta";
                 }
             }
+            } // end !$error after image upload
         }
 
         // Si hubo error en create/edit, recargar encuesta para edición
@@ -467,7 +486,7 @@ unset($_SESSION['mensaje']);
             <div class="form-container">
                 <h2><?= $action === 'create' ? '➕ Nueva Encuesta' : '✏️ Editar Encuesta' ?></h2>
 
-                <form method="POST" id="form-encuesta" novalidate>
+                <form method="POST" id="form-encuesta" enctype="multipart/form-data" novalidate>
 
                     <!-- ── Datos básicos ──────────────────────────────────── -->
                     <div class="form-group">
@@ -481,6 +500,29 @@ unset($_SESSION['mensaje']);
                         <label for="descripcion">Descripción</label>
                         <textarea id="descripcion" name="descripcion"
                                   placeholder="Describe el objetivo de la encuesta..."><?= $encuesta ? htmlspecialchars($encuesta['descripcion']) : '' ?></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="link">🔗 Link externo a la encuesta <small style="font-weight:400;color:#888;">(opcional)</small></label>
+                        <input type="url" id="link" name="link"
+                               value="<?= htmlspecialchars($encuesta['link'] ?? '') ?>"
+                               placeholder="https://forms.google.com/...">
+                        <small>Podés usar Google Forms, Typeform, o cualquier herramienta externa. Al estar configurado, el botón "Responder" redirige a este link.</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="imagen">🖼️ Imagen ilustrativa del popup <small style="font-weight:400;color:#888;">(opcional, máx. 5 MB)</small></label>
+                        <?php if (!empty($encuesta['imagen'])): ?>
+                            <div style="margin-bottom:8px;">
+                                <img src="/uploads/encuestas/<?= htmlspecialchars($encuesta['imagen']) ?>"
+                                     alt="Imagen actual"
+                                     style="max-width:200px;max-height:120px;border-radius:6px;border:1px solid #e2e8f0;">
+                                <p style="font-size:12px;color:#888;margin-top:4px;">Imagen actual. Sube una nueva para reemplazarla.</p>
+                            </div>
+                        <?php endif; ?>
+                        <input type="file" id="imagen" name="imagen" accept="image/jpeg,image/png,image/webp,image/gif"
+                               style="display:block;padding:6px 0;">
+                        <small>Formatos permitidos: JPG, PNG, WEBP, GIF.</small>
                     </div>
 
                     <div class="form-group">

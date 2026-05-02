@@ -222,12 +222,12 @@ class Encuesta {
         try {
             $db = Database::getInstance()->getConnection();
 
-            // Intentar con todas las columnas (migración 039 + 023)
+            // Intentar con todas las columnas (migración 039 + 040)
             try {
                 $sql = "INSERT INTO encuestas
-                        (titulo, descripcion, lat, lng, fecha_creacion, fecha_expiracion, link, youtube_link, activo,
+                        (titulo, descripcion, lat, lng, fecha_creacion, fecha_expiracion, link, youtube_link, imagen, activo,
                          detalle_activo, graficos_config)
-                        VALUES (?, ?, ?, ?, NOW(), ?, ?, ?, 1, ?, ?)";
+                        VALUES (?, ?, ?, ?, NOW(), ?, ?, ?, ?, 1, ?, ?)";
                 $stmt = $db->prepare($sql);
                 $result = $stmt->execute([
                     $data['titulo'] ?? null,
@@ -237,17 +237,18 @@ class Encuesta {
                     $data['fecha_expiracion'] ?? null,
                     $data['link'] ?? null,
                     $data['youtube_link'] ?? null,
+                    $data['imagen'] ?? null,
                     isset($data['detalle_activo']) ? (int)$data['detalle_activo'] : 1,
                     $data['graficos_config'] ?? 'barras,torta,tendencia',
                 ]);
             } catch (\PDOException $e) {
                 if ($e->getCode() !== '42S22' && (int)($e->errorInfo[1] ?? 0) !== 1054) throw $e;
-                // Fallback sin youtube_link (migración 039 no aplicada)
+                // Fallback sin imagen/youtube_link (migraciones anteriores)
                 try {
                     $sql = "INSERT INTO encuestas
-                            (titulo, descripcion, lat, lng, fecha_creacion, fecha_expiracion, link, activo,
+                            (titulo, descripcion, lat, lng, fecha_creacion, fecha_expiracion, link, youtube_link, activo,
                              detalle_activo, graficos_config)
-                            VALUES (?, ?, ?, ?, NOW(), ?, ?, 1, ?, ?)";
+                            VALUES (?, ?, ?, ?, NOW(), ?, ?, ?, 1, ?, ?)";
                     $stmt = $db->prepare($sql);
                     $result = $stmt->execute([
                         $data['titulo'] ?? null,
@@ -256,23 +257,43 @@ class Encuesta {
                         $data['lng'] ?? null,
                         $data['fecha_expiracion'] ?? null,
                         $data['link'] ?? null,
+                        $data['youtube_link'] ?? null,
                         isset($data['detalle_activo']) ? (int)$data['detalle_activo'] : 1,
                         $data['graficos_config'] ?? 'barras,torta,tendencia',
                     ]);
                 } catch (\PDOException $e2) {
                     if ($e2->getCode() !== '42S22' && (int)($e2->errorInfo[1] ?? 0) !== 1054) throw $e2;
-                    $sql = "INSERT INTO encuestas
-                            (titulo, descripcion, lat, lng, fecha_creacion, fecha_expiracion, link, activo)
-                            VALUES (?, ?, ?, ?, NOW(), ?, ?, 1)";
-                    $stmt = $db->prepare($sql);
-                    $result = $stmt->execute([
-                        $data['titulo'] ?? null,
-                        $data['descripcion'] ?? null,
-                        $data['lat'] ?? null,
-                        $data['lng'] ?? null,
-                        $data['fecha_expiracion'] ?? null,
-                        $data['link'] ?? null,
-                    ]);
+                    try {
+                        $sql = "INSERT INTO encuestas
+                                (titulo, descripcion, lat, lng, fecha_creacion, fecha_expiracion, link, activo,
+                                 detalle_activo, graficos_config)
+                                VALUES (?, ?, ?, ?, NOW(), ?, ?, 1, ?, ?)";
+                        $stmt = $db->prepare($sql);
+                        $result = $stmt->execute([
+                            $data['titulo'] ?? null,
+                            $data['descripcion'] ?? null,
+                            $data['lat'] ?? null,
+                            $data['lng'] ?? null,
+                            $data['fecha_expiracion'] ?? null,
+                            $data['link'] ?? null,
+                            isset($data['detalle_activo']) ? (int)$data['detalle_activo'] : 1,
+                            $data['graficos_config'] ?? 'barras,torta,tendencia',
+                        ]);
+                    } catch (\PDOException $e3) {
+                        if ($e3->getCode() !== '42S22' && (int)($e3->errorInfo[1] ?? 0) !== 1054) throw $e3;
+                        $sql = "INSERT INTO encuestas
+                                (titulo, descripcion, lat, lng, fecha_creacion, fecha_expiracion, link, activo)
+                                VALUES (?, ?, ?, ?, NOW(), ?, ?, 1)";
+                        $stmt = $db->prepare($sql);
+                        $result = $stmt->execute([
+                            $data['titulo'] ?? null,
+                            $data['descripcion'] ?? null,
+                            $data['lat'] ?? null,
+                            $data['lng'] ?? null,
+                            $data['fecha_expiracion'] ?? null,
+                            $data['link'] ?? null,
+                        ]);
+                    }
                 }
             }
 
@@ -328,6 +349,10 @@ class Encuesta {
                 $update[] = "youtube_link = ?";
                 $params[] = $data['youtube_link'];
             }
+            if (array_key_exists('imagen', $data)) {
+                $update[] = "imagen = ?";
+                $params[] = $data['imagen'];
+            }
             // Panel detalle (migración 023)
             if (array_key_exists('detalle_activo', $data)) {
                 $update[] = "detalle_activo = ?";
@@ -354,7 +379,7 @@ class Encuesta {
                 // Quitar detalle_activo y graficos_config del update
                 $updateFallback = [];
                 $paramsFallback = [];
-                $skip = ['detalle_activo', 'graficos_config'];
+                $skip = ['detalle_activo', 'graficos_config', 'imagen'];
                 $skipIdx = [];
                 foreach ($update as $i => $clause) {
                     $colName = trim(explode('=', $clause)[0]);
@@ -429,6 +454,49 @@ class Encuesta {
             return $db->prepare("DELETE FROM encuestas WHERE id = ?")->execute([$id]);
         } catch (Exception $e) {
             error_log("Error en Encuesta::delete - " . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Sube una imagen ilustrativa para el popup de la encuesta.
+     * @param array $file  Elemento de $_FILES['imagen']
+     * @return string|false  Nombre del archivo guardado o false en caso de error
+     */
+    public static function uploadImage($file) {
+        try {
+            if (!isset($file['tmp_name']) || !$file['tmp_name']) {
+                return false;
+            }
+
+            $allowed = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+            if (!in_array($file['type'], $allowed)) {
+                error_log("Encuesta::uploadImage — tipo no permitido: " . $file['type']);
+                return false;
+            }
+
+            if ($file['size'] > 5 * 1024 * 1024) {
+                error_log("Encuesta::uploadImage — archivo demasiado grande: " . $file['size']);
+                return false;
+            }
+
+            $upload_dir = __DIR__ . '/../uploads/encuestas';
+            if (!is_dir($upload_dir)) {
+                mkdir($upload_dir, 0755, true);
+            }
+
+            $ext      = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+            $filename = 'encuesta_' . time() . '_' . rand(1000, 9999) . '.' . $ext;
+            $filepath = $upload_dir . '/' . $filename;
+
+            if (!move_uploaded_file($file['tmp_name'], $filepath)) {
+                error_log("Encuesta::uploadImage — error moviendo archivo");
+                return false;
+            }
+
+            return $filename;
+        } catch (Exception $e) {
+            error_log("Error en Encuesta::uploadImage - " . $e->getMessage());
             return false;
         }
     }
