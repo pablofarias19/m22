@@ -436,9 +436,12 @@ button:focus-visible,.opt-btn:focus-visible,.sino-btn:focus-visible,
       </div>
       <?php endif; ?>
     </div>
-    <?php if (!empty($encuesta['imagen']) && preg_match('/^[\w\-]+\.(jpg|jpeg|png|gif|webp)$/i', $encuesta['imagen'])): ?>
+    <?php
+    $imgSafe = !empty($encuesta['imagen']) ? basename($encuesta['imagen']) : '';
+    if ($imgSafe && preg_match('/^[\w\-]+\.(jpg|jpeg|png|gif|webp)$/i', $imgSafe)):
+    ?>
     <div style="margin:0 -20px -1px;max-height:240px;overflow:hidden;border-radius:0;">
-      <img src="/uploads/encuestas/<?= rawurlencode($encuesta['imagen']) ?>"
+      <img src="/uploads/encuestas/<?= rawurlencode($imgSafe) ?>"
            alt="<?= htmlspecialchars($encuesta['titulo']) ?>"
            style="width:100%;object-fit:cover;max-height:240px;display:block;"
            loading="lazy"

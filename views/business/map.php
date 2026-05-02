@@ -6856,13 +6856,14 @@ function escHtml(str) {
 function formatEncuestaFecha(str) {
     if (!str) return null;
     try {
-        var d = new Date(str.includes('T') ? str : str + 'T00:00:00');
+        // Use 'T00:00:00Z' (UTC) for consistent date comparison across all users
+        var d = new Date(str.includes('T') ? str : str + 'T00:00:00Z');
         var now = new Date();
         var diffDays = (d - now) / 86400000;
         if (diffDays < 0) return { texto: 'Cerrada', clase: 'cerrada' };
         if (diffDays < 1) return { texto: 'Cierra hoy', clase: 'urgente' };
         if (diffDays < 3) return { texto: 'Cierra pronto', clase: 'pronto' };
-        return { texto: 'Cierra el ' + d.toLocaleDateString('es-AR', { day:'numeric', month:'short' }), clase: 'normal' };
+        return { texto: 'Cierra el ' + d.toLocaleDateString('es-AR', { day:'numeric', month:'long' }), clase: 'normal' };
     } catch(_) { return null; }
 }
 
@@ -6969,7 +6970,7 @@ function encuestaRenderFormulario(content, enc, encuestaId, loggedUserId) {
     if (enc.youtube_link) {
         var ytM = enc.youtube_link.match(/(?:v=|youtu\.be\/)([A-Za-z0-9_-]{11})/);
         if (ytM) {
-            html += '<div style="margin-bottom:14px;"><iframe width="100%" height="180" src="https://www.youtube.com/embed/' + escHtml(ytM[1]) + '" frameborder="0" allowfullscreen style="border-radius:8px;" title="Video de la encuesta"></iframe></div>';
+            html += '<div style="margin-bottom:14px;"><iframe width="100%" height="180" src="https://www.youtube.com/embed/' + escHtml(ytM[1]) + '" style="border:none;border-radius:8px;" allowfullscreen title="Video de la encuesta"></iframe></div>';
         } else {
             html += '<a href="' + escHtml(enc.youtube_link) + '" target="_blank" rel="noopener noreferrer" style="display:inline-flex;align-items:center;gap:6px;margin-bottom:14px;padding:7px 14px;background:#ff0000;color:white;border-radius:8px;text-decoration:none;font-weight:600;font-size:13px;">▶ Ver en YouTube</a>';
         }
