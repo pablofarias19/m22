@@ -8823,12 +8823,20 @@ function _renderMtItems(items, sortBy) {
     });
 }
 
-/** Extract YouTube video ID from a URL (youtu.be/ID or watch?v=ID) */
+/** Extract YouTube video ID from a URL (youtu.be/ID, watch?v=ID, /live/ID, /shorts/ID, /embed/ID) */
 function _extractYTVideoId(url) {
     if (!url) return null;
-    const m1 = url.match(/youtu\.be\/([a-zA-Z0-9_-]{11})/);
-    const m2 = url.match(/[?&]v=([a-zA-Z0-9_-]{11})/);
-    return m1 ? m1[1] : (m2 ? m2[1] : null);
+    let m;
+    // youtu.be/ID
+    m = url.match(/youtu\.be\/([a-zA-Z0-9_-]{11})/);
+    if (m) return m[1];
+    // ?v=ID or &v=ID (standard watch URLs)
+    m = url.match(/[?&]v=([a-zA-Z0-9_-]{11})/);
+    if (m) return m[1];
+    // youtube.com/live/ID  |  youtube.com/shorts/ID  |  youtube.com/embed/ID
+    m = url.match(/youtube\.com\/(?:live|shorts|embed)\/([a-zA-Z0-9_-]{11})/);
+    if (m) return m[1];
+    return null;
 }
 
 /** Open YouTube video overlay on the map */
