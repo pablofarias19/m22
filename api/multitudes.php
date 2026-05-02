@@ -24,11 +24,13 @@ $id     = (int)($_GET['id'] ?? 0);
 
 $db = null;
 try { $db = \Core\Database::getInstance()->getConnection(); }
-catch (Exception $e) { error_log('Multitudes BD: ' . $e->getMessage()); }
+catch (Exception $e) {
+    error_log('Multitudes BD: ' . $e->getMessage());
+    respond_error('BD no disponible', 503);
+}
 
 // ── GET ───────────────────────────────────────────────────────────────────────
 if ($method === 'GET') {
-    if (!$db) respond_error('BD no disponible', 503);
     try {
         $db->query("SELECT 1 FROM multitudes LIMIT 1");
 
@@ -77,7 +79,7 @@ if ($method === 'GET') {
 
     } catch (\PDOException $e) {
         error_log('Multitudes GET: ' . $e->getMessage());
-        respond_success([], 'Tabla multitudes no existe aún. Ejecutar migrations/041_multitudes.sql');
+        respond_error('Tabla multitudes no disponible. Ejecutar migrations/041_multitudes.sql', 503);
     }
 }
 
