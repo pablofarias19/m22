@@ -1289,6 +1289,57 @@ try {
             background: linear-gradient(135deg, transparent 50%, rgba(255,255,255,0.28) 50%);
             border-radius: 0 0 10px 0;
         }
+        /* Autoplay button: highlight when active */
+        #yt-float-auto-btn.is-active { background: rgba(99,102,241,0.55); }
+        /* Share popover – appended to body, positioned via JS */
+        #yt-share-popover {
+            display: none;
+            position: fixed;
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 6px 24px rgba(0,0,0,0.28);
+            padding: 5px;
+            z-index: 10600;
+            min-width: 190px;
+            flex-direction: column;
+        }
+        #yt-share-popover.is-open { display: flex; }
+        .yt-share-option {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            padding: 8px 12px;
+            color: #1e1b4b;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 600;
+            border-radius: 7px;
+            border: none;
+            background: none;
+            cursor: pointer;
+            width: 100%;
+            text-align: left;
+            transition: background 0.12s;
+        }
+        .yt-share-option:hover { background: #f5f3ff; color: #4f46e5; }
+        /* Toast notification for "link copied" */
+        #yt-copy-toast {
+            position: fixed;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%) translateY(12px);
+            background: #1e1b4b;
+            color: #fff;
+            padding: 7px 18px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.25s, transform 0.25s;
+            z-index: 10700;
+        }
+        #yt-copy-toast.is-visible { opacity: 1; transform: translateX(-50%) translateY(0); }
         /* Sidebar pill */
         .mt-sidebar-item {
             padding: 9px 11px;
@@ -8811,15 +8862,19 @@ function _renderMtItems(items, sortBy) {
     });
 
     lista.innerHTML = '';
+    // Build YouTube-only ordered list for autoplay-next feature
+    const ytPlaylist = sorted.filter(it => _extractYTVideoId(it.stream_url || ''));
     sorted.forEach(item => {
-        const ytId = _extractYTVideoId(item.stream_url || '');
+        const ytId  = _extractYTVideoId(item.stream_url || '');
+        // Index of this item within the YouTube-only playlist
+        const ytIdx = ytId ? ytPlaylist.indexOf(item) : -1;
         const a = document.createElement('a');
         a.className = 'mt-item';
         if (ytId) {
             a.href = '#';
             a.addEventListener('click', function (ev) {
                 ev.preventDefault();
-                openYouTubeModal(ytId, item.titulo);
+                openYouTubeModal(ytId, item.titulo, ytPlaylist, ytIdx);
             });
         } else if (item.stream_url) {
             a.href = item.stream_url;
@@ -8867,14 +8922,23 @@ function _extractYTVideoId(url) {
 }
 
 /** Open YouTube floating video panel (replaces full-screen modal) */
-function openYouTubeModal(videoId, titulo) {
+function openYouTubeModal(videoId, titulo, playlist, playlistIdx) {
     const panel   = document.getElementById('yt-float-panel');
     const iframe  = document.getElementById('yt-video-iframe');
     const titleEl = document.getElementById('yt-float-title');
     if (!panel || !iframe) return;
     if (!/^[a-zA-Z0-9_-]{11}$/.test(videoId)) return;
     if (titleEl) titleEl.textContent = titulo || '▶ Video';
-    iframe.src = 'https://www.youtube.com/embed/' + encodeURIComponent(videoId) + '?autoplay=1&rel=0';
+    // enablejsapi=1 allows postMessage events (needed for autoplay-next detection)
+    iframe.src = 'https://www.youtube.com/embed/' + encodeURIComponent(videoId) + '?autoplay=1&rel=0&enablejsapi=1';
+    // Store current video context on panel for share + autoplay-next
+    panel._currentVideoId  = videoId;
+    panel._currentTitulo   = titulo || '';
+    panel._playlist        = (Array.isArray(playlist) && playlist.length > 1) ? playlist : null;
+    panel._playlistIdx     = (panel._playlist && playlistIdx >= 0) ? playlistIdx : -1;
+    // Show autoplay button only when there are more YouTube items to play
+    const autoBtn = document.getElementById('yt-float-auto-btn');
+    if (autoBtn) autoBtn.style.display = panel._playlist ? '' : 'none';
     // Restore from minimized
     panel.classList.remove('is-minimized');
     const minBtn = document.getElementById('yt-float-min-btn');
@@ -8905,6 +8969,9 @@ function closeYouTubeModal() {
     if (!panel) return;
     panel.style.display = 'none';
     if (iframe) iframe.src = '';
+    // Also close share popover if open
+    const popover = document.getElementById('yt-share-popover');
+    if (popover) { popover.classList.remove('is-open'); popover.setAttribute('aria-hidden', 'true'); }
 }
 
 /** Initialise drag and resize behaviour for the YouTube floating panel.
@@ -8917,7 +8984,109 @@ function closeYouTubeModal() {
         const header     = document.getElementById('yt-float-header');
         const minBtn     = document.getElementById('yt-float-min-btn');
         const closeBtn   = document.getElementById('yt-float-close-btn');
+        const shareBtn   = document.getElementById('yt-float-share-btn');
+        const autoBtn    = document.getElementById('yt-float-auto-btn');
         const resizeHdl  = document.getElementById('yt-float-resize');
+
+        // ── Share popover (appended to body to avoid overflow:hidden clipping) ─
+        const popover = document.createElement('div');
+        popover.id = 'yt-share-popover';
+        popover.setAttribute('aria-hidden', 'true');
+        popover.innerHTML = `
+            <a class="yt-share-option" id="yt-share-wa"   href="#" target="_blank" rel="noopener">💬 WhatsApp</a>
+            <a class="yt-share-option" id="yt-share-tw"   href="#" target="_blank" rel="noopener">🐦 Twitter / X</a>
+            <a class="yt-share-option" id="yt-share-fb"   href="#" target="_blank" rel="noopener">📘 Facebook</a>
+            <button class="yt-share-option" id="yt-share-copy">🔗 Copiar link</button>
+        `;
+        document.body.appendChild(popover);
+
+        // Toast for copy-link feedback
+        const toast = document.createElement('div');
+        toast.id = 'yt-copy-toast';
+        toast.textContent = '✓ Link copiado';
+        document.body.appendChild(toast);
+
+        function _showToast() {
+            toast.classList.add('is-visible');
+            setTimeout(function () { toast.classList.remove('is-visible'); }, 2000);
+        }
+
+        function _closePopover() {
+            popover.classList.remove('is-open');
+            popover.setAttribute('aria-hidden', 'true');
+        }
+
+        // ── Share button: build links on click, toggle popover ──────────────
+        shareBtn.addEventListener('click', function (e) {
+            e.stopPropagation();
+            const videoId = panel._currentVideoId || '';
+            const titulo  = panel._currentTitulo  || 'Video';
+            if (!videoId) return;
+            const ytUrl  = 'https://www.youtube.com/watch?v=' + videoId;
+            const text   = encodeURIComponent(titulo + ' — vía MAPITA');
+            const urlEnc = encodeURIComponent(ytUrl);
+            document.getElementById('yt-share-wa').href  = 'https://wa.me/?text=' + text + '%20' + urlEnc;
+            document.getElementById('yt-share-tw').href  = 'https://twitter.com/intent/tweet?text=' + text + '&url=' + urlEnc;
+            document.getElementById('yt-share-fb').href  = 'https://www.facebook.com/sharer/sharer.php?u=' + urlEnc;
+
+            // Toggle popover, position below the share button
+            const isOpen = !popover.classList.contains('is-open');
+            _closePopover();
+            if (isOpen) {
+                const rect = shareBtn.getBoundingClientRect();
+                popover.style.top   = (rect.bottom + 4) + 'px';
+                // Align right edge of popover to right edge of button
+                popover.style.left  = '';
+                popover.style.right = (window.innerWidth - rect.right) + 'px';
+                popover.classList.add('is-open');
+                popover.setAttribute('aria-hidden', 'false');
+            }
+        });
+
+        // Copy-link button
+        document.getElementById('yt-share-copy').addEventListener('click', function () {
+            const videoId = panel._currentVideoId || '';
+            if (!videoId) return;
+            const ytUrl = 'https://www.youtube.com/watch?v=' + videoId;
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(ytUrl).then(_showToast).catch(function () {
+                    window.prompt('Copiá este link:', ytUrl);
+                });
+            } else {
+                window.prompt('Copiá este link:', ytUrl);
+            }
+            _closePopover();
+        });
+
+        // Close popover when clicking anywhere outside it
+        document.addEventListener('click', function (e) {
+            if (!popover.classList.contains('is-open')) return;
+            if (!popover.contains(e.target) && e.target !== shareBtn) {
+                _closePopover();
+            }
+        });
+
+        // ── Autoplay next toggle ─────────────────────────────────────────────
+        autoBtn.addEventListener('click', function () {
+            panel._autoplay = !panel._autoplay;
+            autoBtn.classList.toggle('is-active', panel._autoplay);
+            autoBtn.setAttribute('aria-label', panel._autoplay ? 'Desactivar autoplay' : 'Activar autoplay');
+            autoBtn.title = panel._autoplay ? 'Autoplay: activado' : 'Autoplay: desactivado';
+        });
+
+        // Listen for YouTube postMessage events to detect end-of-video (state 0)
+        window.addEventListener('message', function (e) {
+            // Strict origin check: only accept messages from YouTube's embed domain
+            if (e.origin !== 'https://www.youtube.com') return;
+            let data;
+            try { data = typeof e.data === 'string' ? JSON.parse(e.data) : e.data; } catch (ex) { return; }
+            // YouTube sends {event:"onStateChange", info:0} when the video ends
+            if (data && data.event === 'onStateChange' && data.info === 0) {
+                if (panel._autoplay && panel._playlist) {
+                    _ytPlayNext(panel);
+                }
+            }
+        });
 
         // ── Minimize / restore ──────────────────────────────────────────────
         minBtn.addEventListener('click', function () {
@@ -8997,6 +9166,20 @@ function closeYouTubeModal() {
         });
     });
 }());
+
+/** Advance to the next YouTube item in the playlist and open it */
+function _ytPlayNext(panel) {
+    const playlist = panel._playlist;
+    const idx      = panel._playlistIdx;
+    if (!playlist || idx < 0) return;
+    const nextIdx = idx + 1;
+    if (nextIdx >= playlist.length) return; // end of playlist — stop
+    const nextItem = playlist[nextIdx];
+    const nextId   = _extractYTVideoId(nextItem.stream_url || '');
+    if (nextId) {
+        openYouTubeModal(nextId, nextItem.titulo, playlist, nextIdx);
+    }
+}
 
 function _initMtPanelDrag(panel, handle) {
     handle.addEventListener('mousedown', function (e) {
@@ -9883,7 +10066,9 @@ async function enviarConvocatoria() {
     <!-- Drag handle: grab anywhere on the header to move the panel -->
     <div id="yt-float-header">
         <span id="yt-float-title">▶ Video</span>
-        <button class="yt-float-btn" id="yt-float-min-btn"   aria-label="Minimizar video"  title="Minimizar">—</button>
+        <button class="yt-float-btn" id="yt-float-auto-btn"  aria-label="Activar autoplay"  title="Autoplay siguiente" style="display:none">⏭</button>
+        <button class="yt-float-btn" id="yt-float-share-btn" aria-label="Compartir video"   title="Compartir">↗</button>
+        <button class="yt-float-btn" id="yt-float-min-btn"   aria-label="Minimizar video"   title="Minimizar">—</button>
         <button class="yt-float-btn" id="yt-float-close-btn" aria-label="Cerrar video"      title="Cerrar (Esc)">✕</button>
     </div>
     <div id="yt-float-body">
