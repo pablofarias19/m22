@@ -46,11 +46,12 @@ if (empty($og_image)) {
 // ser JPEG, WebP u otras — se detecta por extensión para mayor precisión.
 if (empty($og_image_mime)) {
     $imgPath = strtok(parse_url($og_image ?? '', PHP_URL_PATH) ?? '', '?');
-    $ext     = strtolower(pathinfo($imgPath, PATHINFO_EXTENSION));
+    $ext     = strtolower(pathinfo((string)$imgPath, PATHINFO_EXTENSION));
     $og_image_mime = match ($ext) {
         'jpg', 'jpeg' => 'image/jpeg',
         'webp'        => 'image/webp',
         'gif'         => 'image/gif',
+        'png'         => 'image/png',
         default       => 'image/png',  // API endpoint y PNG subidos
     };
 }
