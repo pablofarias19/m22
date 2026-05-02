@@ -88,6 +88,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         Multitud::deleteItem((int)$_POST['item_id']);
         $message = 'Ítem eliminado.'; $messageType = 'success';
     }
+
+    if ($action === 'update_item' && !empty($_POST['item_id'])) {
+        $itemId = (int)$_POST['item_id'];
+        $titulo = trim($_POST['titulo'] ?? '');
+        $url    = trim($_POST['stream_url'] ?? '');
+        if (!$titulo || !$url) {
+            $message = 'Título y URL son requeridos.'; $messageType = 'error';
+        } elseif (Multitud::updateItem($itemId, [
+            'titulo'            => $titulo,
+            'stream_url'        => $url,
+            'descripcion_corta' => $_POST['descripcion_corta'] ?? null,
+            'grupo_artista'     => $_POST['grupo_artista'] ?? null,
+            'fecha_periodo'     => !empty($_POST['fecha_periodo']) ? $_POST['fecha_periodo'] : null,
+            'orden'             => (int)($_POST['orden'] ?? 0),
+            'activo'            => isset($_POST['activo']) ? 1 : 0,
+        ])) {
+            $message = 'Ítem actualizado.'; $messageType = 'success';
+        } else {
+            $message = 'Error al actualizar ítem.'; $messageType = 'error';
+        }
+    }
 }
 
 $multitudes = Multitud::getAll();
@@ -170,10 +191,25 @@ if ($selectedId > 0) {
         .item-row .item-meta  { font-size: .78em; color: #6b7280; display: flex; flex-wrap: wrap; gap: 8px; }
         .item-row .item-url   { font-size: .75em; color: #4f46e5; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 280px; }
 
+        .items-scroll-box { max-height: 420px; overflow-y: auto; padding-right: 4px; }
+
+        .btn-edit { background: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0; }
+        .btn-edit:hover { background: #dcfce7; }
+
+        .item-actions { display: flex; flex-direction: column; gap: 5px; flex-shrink: 0; }
+
+        .edit-form-row { display: none; background: #f8f7ff; border: 1px solid #ddd6fe; border-radius: 8px; padding: 16px; margin-bottom: 8px; }
+        .edit-form-row.open { display: block; }
+        .edit-form-row .edit-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .edit-form-row .form-group { margin: 0; }
+        .edit-form-row .edit-actions { margin-top: 12px; display: flex; gap: 8px; align-items: center; }
+        .edit-checkbox-label { display: flex; align-items: center; gap: 6px; cursor: pointer; font-weight: 600; font-size: .88em; }
+
         @media (max-width: 768px) {
             .form-grid { grid-template-columns: 1fr; }
             th, td { padding: 8px; font-size: .78em; }
             .item-row { flex-direction: column; }
+            .edit-form-row .edit-grid { grid-template-columns: 1fr; }
         }
     </style>
 </head>
@@ -262,6 +298,7 @@ if ($selectedId > 0) {
             <?php if (empty($selectedItems)): ?>
                 <p style="color:#999;text-align:center;padding:20px;">Esta multitud no tiene ítems aún.</p>
             <?php else: ?>
+                <div class="items-scroll-box">
                 <?php foreach ($selectedItems as $item): ?>
                 <div class="item-row">
                     <div class="item-info">
@@ -284,14 +321,60 @@ if ($selectedId > 0) {
                             </a>
                         </div>
                     </div>
-                    <form method="post" class="inline-form" onsubmit="return confirm('¿Eliminar este ítem?')">
+                    <div class="item-actions">
+                        <button type="button" class="btn btn-edit btn-sm" onclick="toggleEditForm(<?php echo $item['id']; ?>)">✏️</button>
+                        <form method="post" class="inline-form" onsubmit="return confirm('¿Eliminar este ítem?')">
+                            <?php echo csrfField(); ?>
+                            <input type="hidden" name="action"  value="delete_item">
+                            <input type="hidden" name="item_id" value="<?php echo $item['id']; ?>">
+                            <button type="submit" class="btn btn-danger btn-sm">🗑️</button>
+                        </form>
+                    </div>
+                </div>
+                <!-- Formulario edición inline -->
+                <div class="edit-form-row" id="edit-form-<?php echo $item['id']; ?>">
+                    <form method="post">
                         <?php echo csrfField(); ?>
-                        <input type="hidden" name="action"  value="delete_item">
+                        <input type="hidden" name="action"  value="update_item">
                         <input type="hidden" name="item_id" value="<?php echo $item['id']; ?>">
-                        <button type="submit" class="btn btn-danger btn-sm">🗑️</button>
+                        <input type="hidden" name="multitud_id" value="<?php echo $selectedId; ?>">
+                        <div class="edit-grid">
+                            <div class="form-group">
+                                <label>Título *</label>
+                                <input type="text" name="titulo" required value="<?php echo htmlspecialchars($item['titulo']); ?>">
+                            </div>
+                            <div class="form-group">
+                                <label>URL del link / stream *</label>
+                                <input type="url" name="stream_url" required value="<?php echo htmlspecialchars($item['stream_url']); ?>">
+                            </div>
+                            <div class="form-group">
+                                <label>Grupo / Artista</label>
+                                <input type="text" name="grupo_artista" value="<?php echo htmlspecialchars($item['grupo_artista'] ?? ''); ?>">
+                            </div>
+                            <div class="form-group">
+                                <label>Fecha / Período</label>
+                                <input type="date" name="fecha_periodo" value="<?php echo htmlspecialchars($item['fecha_periodo'] ?? ''); ?>">
+                            </div>
+                            <div class="form-group">
+                                <label>Descripción corta</label>
+                                <input type="text" name="descripcion_corta" maxlength="255" value="<?php echo htmlspecialchars($item['descripcion_corta'] ?? ''); ?>">
+                            </div>
+                            <div class="form-group">
+                                <label>Orden</label>
+                                <input type="number" name="orden" min="0" value="<?php echo (int)$item['orden']; ?>">
+                            </div>
+                        </div>
+                        <div class="edit-actions">
+                            <label class="edit-checkbox-label">
+                                <input type="checkbox" name="activo" style="width:auto;" <?php echo $item['activo'] ? 'checked' : ''; ?>> Activo
+                            </label>
+                            <button type="submit" class="btn btn-primary btn-sm">💾 Guardar</button>
+                            <button type="button" class="btn btn-secondary btn-sm" onclick="toggleEditForm(<?php echo $item['id']; ?>)">✖ Cancelar</button>
+                        </div>
                     </form>
                 </div>
                 <?php endforeach; ?>
+                </div>
             <?php endif; ?>
         </div>
     </div>
@@ -388,6 +471,11 @@ if ($selectedId > 0) {
 </div>
 
 <script>
+function toggleEditForm(id) {
+    const form = document.getElementById('edit-form-' + id);
+    if (form) form.classList.toggle('open');
+}
+
 (function () {
     var mapEl = document.getElementById('mini-map');
     if (!mapEl) return;
