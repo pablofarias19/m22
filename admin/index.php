@@ -9,7 +9,7 @@ session_start();
 require_once __DIR__ . '/../core/Database.php';
 require_once __DIR__ . '/../core/helpers.php';
 
-$validTabs = ['negocios','marcas','noticias','eventos','trivias','encuestas','ofertas','transmisiones','moderacion','sectores','comercial','camaras','agencias','lineas','competencias','radar_legal','consultas_archivadas','permisos'];
+$validTabs = ['negocios','marcas','noticias','eventos','trivias','encuestas','ofertas','transmisiones','multitudes','moderacion','sectores','comercial','camaras','agencias','lineas','competencias','radar_legal','consultas_archivadas','permisos'];
 $tab = in_array($_GET['tab'] ?? '', $validTabs) ? $_GET['tab'] : 'negocios';
 ?>
 <!DOCTYPE html>
