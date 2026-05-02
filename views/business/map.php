@@ -1910,7 +1910,7 @@ try {
         </div>
         <div class="sb-mod-body open">
             <div class="sb-mod-body-inner">
-                <div id="encuestas-list" style="max-height:150px;overflow-y:auto;"></div>
+                <div id="encuestas-list" style="max-height:220px;overflow-y:auto;"></div>
             </div>
         </div>
     </div>
@@ -6824,11 +6824,14 @@ function mostrarEncuestasWidget(encuestas) {
 
         const badge = document.createElement('span');
         if (isLink) {
-            badge.textContent = '🔗 Link externo';
+            badge.textContent = '🔗 Link externo ↗';
             badge.style.cssText = 'display:inline-block;font-size:10px;padding:2px 6px;border-radius:10px;background:#e3f2fd;color:#1565c0;font-weight:600;margin-bottom:4px;';
-        } else {
+        } else if (enc.render_mode === 'pro') {
             badge.textContent = '📋 Encuesta PRO';
             badge.style.cssText = 'display:inline-block;font-size:10px;padding:2px 6px;border-radius:10px;background:#fff3e0;color:#e65100;font-weight:600;margin-bottom:4px;';
+        } else {
+            badge.textContent = '📋 Encuesta';
+            badge.style.cssText = 'display:inline-block;font-size:10px;padding:2px 6px;border-radius:10px;background:#f3f4f6;color:#374151;font-weight:600;margin-bottom:4px;';
         }
 
         const desc = document.createElement('p');
@@ -6840,6 +6843,27 @@ function mostrarEncuestasWidget(encuestas) {
         item.appendChild(desc);
         lista.appendChild(item);
     });
+}
+
+// ── Helpers de encuesta ───────────────────────────────────────────────────────
+function escHtml(str) {
+    return String(str == null ? '' : str)
+        .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+        .replace(/>/g,'&gt;').replace(/"/g,'&quot;')
+        .replace(/'/g,'&#39;');
+}
+
+function formatEncuestaFecha(str) {
+    if (!str) return null;
+    try {
+        var d = new Date(str.includes('T') ? str : str + 'T00:00:00');
+        var now = new Date();
+        var diffDays = (d - now) / 86400000;
+        if (diffDays < 0) return { texto: 'Cerrada', clase: 'cerrada' };
+        if (diffDays < 1) return { texto: 'Cierra hoy', clase: 'urgente' };
+        if (diffDays < 3) return { texto: 'Cierra pronto', clase: 'pronto' };
+        return { texto: 'Cierra el ' + d.toLocaleDateString('es-AR', { day:'numeric', month:'short' }), clase: 'normal' };
+    } catch(_) { return null; }
 }
 
 // ── Variable global para respuestas seleccionadas en el modal ──────────────
@@ -6858,13 +6882,25 @@ function abrirEncuesta(encuestaId, titulo) {
 
     var content = document.createElement('div');
     content.id = 'encuesta-modal-content';
+    content.setAttribute('role', 'dialog');
+    content.setAttribute('aria-modal', 'true');
+    content.setAttribute('aria-label', titulo || 'Encuesta');
+    content.setAttribute('tabindex', '-1');
     content.style.cssText = 'background:#fff;border-radius:16px;padding:28px 24px 22px;max-width:520px;width:100%;max-height:88vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,0.3);position:relative;';
 
     content.innerHTML = '<div style="text-align:center;padding:24px 0;color:#888;"><span style="font-size:28px;display:block;margin-bottom:8px;">⏳</span>Cargando encuesta…</div>';
 
     modal.appendChild(content);
     document.body.appendChild(modal);
+    // Foco inicial en el contenedor del modal
+    content.focus();
+
+    // Cerrar al hacer clic en el backdrop o al presionar Escape
     modal.onclick = function(e){ if(e.target===modal) modal.remove(); };
+    function handleEscape(e) {
+        if (e.key === 'Escape') { modal.remove(); document.removeEventListener('keydown', handleEscape); }
+    }
+    document.addEventListener('keydown', handleEscape);
 
     // Verificar sesión
     var loggedUserId = (typeof SESSION_USER_ID !== 'undefined' && SESSION_USER_ID) ? SESSION_USER_ID : <?= isset($_SESSION['user_id']) && $_SESSION['user_id'] ? (int)$_SESSION['user_id'] : 'null' ?>;
@@ -6917,30 +6953,30 @@ function encuestaRenderFormulario(content, enc, encuestaId, loggedUserId) {
     var total = preguntas.length;
 
     var html = '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;">'
-             + '<h2 style="margin:0;color:#f39c12;font-size:18px;line-height:1.3;">📊 ' + (enc.titulo || '') + '</h2>'
-             + '<button onclick="document.getElementById(\'encuesta-modal-overlay\').remove()" style="background:none;border:none;font-size:22px;cursor:pointer;color:#aaa;padding:0 4px;line-height:1;flex-shrink:0;">✕</button>'
+             + '<h2 style="margin:0;color:#f39c12;font-size:18px;line-height:1.3;" id="enc-modal-title">📊 ' + escHtml(enc.titulo) + '</h2>'
+             + '<button onclick="document.getElementById(\'encuesta-modal-overlay\').remove()" aria-label="Cerrar encuesta" style="background:none;border:none;font-size:22px;cursor:pointer;color:#aaa;padding:0 4px;line-height:1;flex-shrink:0;">✕</button>'
              + '</div>';
 
     if (enc.imagen) {
-        html += '<img src="/uploads/encuestas/' + encodeURIComponent(enc.imagen) + '" alt="' + (enc.titulo || '').replace(/"/g, '&quot;') + '" loading="lazy" style="width:100%;display:block;max-height:180px;object-fit:cover;border-radius:10px;margin-bottom:14px;">';
+        html += '<img src="/uploads/encuestas/' + encodeURIComponent(enc.imagen) + '" alt="' + escHtml(enc.titulo) + '" loading="lazy" onerror="this.style.display=\'none\'" style="width:100%;display:block;max-height:180px;object-fit:cover;border-radius:10px;margin-bottom:14px;">';
     }
 
     if (enc.descripcion) {
-        html += '<p style="color:#666;margin:0 0 16px;font-size:13px;line-height:1.5;">' + enc.descripcion + '</p>';
+        html += '<p style="color:#666;margin:0 0 16px;font-size:13px;line-height:1.5;">' + escHtml(enc.descripcion) + '</p>';
     }
 
     // YouTube embed si existe
     if (enc.youtube_link) {
         var ytM = enc.youtube_link.match(/(?:v=|youtu\.be\/)([A-Za-z0-9_-]{11})/);
         if (ytM) {
-            html += '<div style="margin-bottom:14px;"><iframe width="100%" height="180" src="https://www.youtube.com/embed/' + ytM[1] + '" frameborder="0" allowfullscreen style="border-radius:8px;"></iframe></div>';
+            html += '<div style="margin-bottom:14px;"><iframe width="100%" height="180" src="https://www.youtube.com/embed/' + escHtml(ytM[1]) + '" frameborder="0" allowfullscreen style="border-radius:8px;" title="Video de la encuesta"></iframe></div>';
         } else {
-            html += '<a href="' + enc.youtube_link + '" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:6px;margin-bottom:14px;padding:7px 14px;background:#ff0000;color:white;border-radius:8px;text-decoration:none;font-weight:600;font-size:13px;">▶ Ver en YouTube</a>';
+            html += '<a href="' + escHtml(enc.youtube_link) + '" target="_blank" rel="noopener noreferrer" style="display:inline-flex;align-items:center;gap:6px;margin-bottom:14px;padding:7px 14px;background:#ff0000;color:white;border-radius:8px;text-decoration:none;font-weight:600;font-size:13px;">▶ Ver en YouTube</a>';
         }
     }
 
     // Botón compartir en la cabecera de la encuesta
-    html += '<div style="margin-bottom:12px;"><button onclick="compartirContenido(\'encuesta\',' + (enc.id||0) + ',\'' + (enc.titulo||'').replace(/'/g,'') + '\',\'' + (enc.localidad||'').replace(/'/g,'') + '\')" style="background:none;border:1px solid #1B3B6F;color:#1B3B6F;border-radius:8px;padding:5px 12px;cursor:pointer;font-size:12px;font-weight:600;">📤 Compartir encuesta</button></div>';
+    html += '<div style="margin-bottom:12px;"><button onclick="compartirContenido(\'encuesta\',' + (parseInt(enc.id,10)||0) + ',' + JSON.stringify(enc.titulo||'') + ',' + JSON.stringify(enc.localidad||'') + ')" style="background:none;border:1px solid #1B3B6F;color:#1B3B6F;border-radius:8px;padding:5px 12px;cursor:pointer;font-size:12px;font-weight:600;">📤 Compartir encuesta</button></div>';
 
     if (total > 0) {
         html += '<div style="font-size:11px;color:#888;margin-bottom:14px;font-weight:600;letter-spacing:0.3px;">'
@@ -7048,8 +7084,16 @@ function encuestaSeleccionar(btn, pid, valor) {
 function encuestaEnviar(encuestaId) {
     var loggedUserId = (typeof SESSION_USER_ID !== 'undefined' && SESSION_USER_ID) ? SESSION_USER_ID : <?= isset($_SESSION['user_id']) && $_SESSION['user_id'] ? (int)$_SESSION['user_id'] : 'null' ?>;
     if (!loggedUserId) {
-        alert('Debes iniciar sesión para responder encuestas');
-        window.location.href = '/login';
+        var mc = document.getElementById('encuesta-modal-content');
+        if (mc) {
+            mc.innerHTML = '<div style="text-align:center;padding:28px 20px;">'
+                + '<div style="font-size:2.4rem;margin-bottom:12px">🔐</div>'
+                + '<p style="font-weight:700;font-size:1em;color:#1a1a2e;margin-bottom:8px">Iniciá sesión para participar</p>'
+                + '<a href="/login" style="display:inline-block;margin-top:8px;padding:12px 28px;background:linear-gradient(145deg,#1B3B6F,#2563eb);color:#fff;border-radius:12px;font-weight:700;text-decoration:none;">Iniciar sesión</a>'
+                + '</div>';
+        } else {
+            window.location.href = '/login';
+        }
         return;
     }
 
@@ -7062,7 +7106,14 @@ function encuestaEnviar(encuestaId) {
     }
 
     if (Object.keys(respuestasSeleccionadas).length === 0) {
-        alert('Debes responder al menos una pregunta');
+        var errEl = content ? content.querySelector('#enc-modal-err') : null;
+        if (!errEl && content) {
+            errEl = document.createElement('p');
+            errEl.id = 'enc-modal-err';
+            errEl.style.cssText = 'color:#ef4444;font-size:13px;font-weight:600;text-align:center;margin:8px 0 0;';
+            content.appendChild(errEl);
+        }
+        if (errEl) errEl.textContent = 'Respondé al menos una pregunta antes de enviar.';
         return;
     }
 
@@ -7097,15 +7148,39 @@ function encuestaEnviar(encuestaId) {
                 if (c) c.innerHTML = '<div style="text-align:center;padding:30px;"><span style="font-size:40px;">🎉</span><h3 style="color:#27ae60;margin-top:12px;">¡Gracias por participar!</h3></div>';
             });
         } else if (data._httpStatus === 409 || (data.error && data.error.indexOf('Ya respondiste') !== -1) || (data.message && data.message.indexOf('Ya respondiste') !== -1)) {
-            alert('Ya respondiste esta encuesta anteriormente.');
+            var c409 = document.getElementById('encuesta-modal-content');
+            if (c409) {
+                c409.innerHTML = '<div style="text-align:center;padding:28px 20px;">'
+                    + '<span style="font-size:2.4rem;display:block;margin-bottom:10px;">✅</span>'
+                    + '<p style="font-weight:700;color:#f39c12;margin-bottom:6px;">Ya respondiste esta encuesta</p>'
+                    + '<p style="font-size:13px;color:#6b7280;margin-bottom:16px;">Podés ver los resultados actuales.</p>'
+                    + '<button onclick="document.getElementById(\'encuesta-modal-overlay\').remove()" style="padding:10px 24px;background:#1B3B6F;color:#fff;border:none;border-radius:8px;cursor:pointer;font-weight:700;">Cerrar</button>'
+                    + '</div>';
+            }
         } else {
             var errMsg = data.error || data.message || 'No se pudieron guardar las respuestas';
-            alert('Error: ' + errMsg);
+            var cErr = document.getElementById('encuesta-modal-content');
+            var errEl2 = cErr ? cErr.querySelector('#enc-modal-err') : null;
+            if (!errEl2 && cErr) {
+                errEl2 = document.createElement('p');
+                errEl2.id = 'enc-modal-err';
+                errEl2.style.cssText = 'color:#ef4444;font-size:13px;font-weight:600;text-align:center;margin:8px 0 0;';
+                cErr.appendChild(errEl2);
+            }
+            if (errEl2) errEl2.textContent = 'Error: ' + errMsg;
         }
     })
     .catch(function(e){
         console.error('Error encuestaEnviar', e);
-        alert('Error al enviar respuestas');
+        var cCatch = document.getElementById('encuesta-modal-content');
+        var errElC = cCatch ? cCatch.querySelector('#enc-modal-err') : null;
+        if (!errElC && cCatch) {
+            errElC = document.createElement('p');
+            errElC.id = 'enc-modal-err';
+            errElC.style.cssText = 'color:#ef4444;font-size:13px;font-weight:600;text-align:center;margin:8px 0 0;';
+            cCatch.appendChild(errElC);
+        }
+        if (errElC) errElC.textContent = 'Error de conexión. Intentá de nuevo.';
     });
 }
 
@@ -7484,22 +7559,28 @@ function mostrarMarcadoresEncuestas(encuestas) {
         var icon = L.divIcon({ html: iconHtml, className: '', iconSize: iconSize, iconAnchor: [iconSize[0]/2, iconSize[1]], popupAnchor: [0,-44] });
         var m = L.marker([parseFloat(enc.lat), parseFloat(enc.lng)], { icon: icon });
         m._mapitaMeta = { entity_type: 'encuesta', entity_id: enc.id || null, mapita_id: enc.mapita_id || null };
-        var encTituloSafe = enc.titulo.replace(/'/g, '').replace(/"/g, '');
-        var popHtml = '<div style="font-family:inherit;min-width:220px;background:#fff;border-radius:10px;overflow:hidden;">'
+        var expInfo = formatEncuestaFecha(enc.fecha_expiracion);
+        var expBadgeColor = expInfo ? { cerrada:'#6b7280', urgente:'#ef4444', pronto:'#f59e0b', normal:'#10b981' }[expInfo.clase] : '#10b981';
+        var totalPartEnc = parseInt(enc.total_participantes || 0, 10);
+        var popHtml = '<div style="font-family:inherit;min-width:230px;background:#fff;border-radius:10px;overflow:hidden;">'
             + '<div style="background:linear-gradient(135deg,#f39c12,#e67e22);color:white;padding:14px 14px 12px;">'
-            + '<strong style="font-size:14px;line-height:1.3;display:block;">📋 ' + enc.titulo + '</strong></div>'
+            + '<strong style="font-size:14px;line-height:1.3;display:block;">📋 ' + escHtml(enc.titulo) + '</strong>'
+            + '<div style="margin-top:6px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;">'
+            + (expInfo ? '<span style="font-size:10px;font-weight:700;background:rgba(0,0,0,.18);color:#fff;padding:2px 8px;border-radius:10px;">' + escHtml(expInfo.texto) + '</span>' : '<span style="font-size:10px;font-weight:700;background:rgba(255,255,255,.22);color:#fff;padding:2px 8px;border-radius:10px;">✅ Abierta</span>')
+            + (totalPartEnc > 0 ? '<span style="font-size:10px;color:rgba(255,255,255,.9);">👥 ' + totalPartEnc + ' ' + (totalPartEnc === 1 ? 'participante' : 'participantes') + '</span>' : '')
+            + '</div>'
+            + '</div>'
             + '<div style="padding:10px 12px 4px">';
-        if (enc.imagen) popHtml += '<img src="/uploads/encuestas/' + encodeURIComponent(enc.imagen) + '" alt="' + encTituloSafe + '" loading="lazy" style="width:100%;display:block;max-height:120px;object-fit:cover;border-radius:6px;margin-bottom:8px;">';
-        if (enc.descripcion) popHtml += '<p style="margin:0 0 6px;font-size:12px;color:#555;line-height:1.4">' + enc.descripcion.substring(0,90) + (enc.descripcion.length > 90 ? '…' : '') + '</p>';
-        if (enc.fecha_expiracion) popHtml += '<p style="margin:0 0 8px;font-size:11px;color:#999;">📅 Vence: ' + enc.fecha_expiracion + '</p>';
+        if (enc.imagen) popHtml += '<img src="/uploads/encuestas/' + encodeURIComponent(enc.imagen) + '" alt="' + escHtml(enc.titulo) + '" loading="lazy" onerror="this.style.display=\'none\'" style="width:100%;display:block;max-height:120px;object-fit:cover;border-radius:6px;margin-bottom:8px;">';
+        if (enc.descripcion) popHtml += '<p style="margin:0 0 6px;font-size:12px;color:#555;line-height:1.4">' + escHtml(enc.descripcion.substring(0, 90)) + (enc.descripcion.length > 90 ? '…' : '') + '</p>';
         // Botón Responder
         if (enc.link) {
-            popHtml += '<a href="' + enc.link + '" target="_blank" style="display:block;padding:9px 8px;background:#f39c12;color:white;border-radius:8px;text-align:center;text-decoration:none;font-size:13px;font-weight:700;margin-bottom:6px;">🔗 Responder</a>';
+            popHtml += '<a href="' + escHtml(enc.link) + '" target="_blank" rel="noopener noreferrer" title="Se abre en una nueva pestaña" style="display:block;padding:9px 8px;background:#f39c12;color:white;border-radius:8px;text-align:center;text-decoration:none;font-size:13px;font-weight:700;margin-bottom:6px;">🔗 Ir a la encuesta ↗</a>';
         } else {
-            popHtml += '<button onclick="abrirEncuesta(' + enc.id + ',\'' + encTituloSafe + '\')" style="width:100%;padding:9px 8px;background:#f39c12;color:white;border:none;border-radius:8px;cursor:pointer;font-size:13px;font-weight:700;margin-bottom:6px;">📋 Responder</button>';
+            popHtml += '<button onclick="abrirEncuesta(' + (parseInt(enc.id,10)||0) + ',\'' + escHtml(enc.titulo).replace(/'/g,'&#39;') + '\')" style="width:100%;padding:9px 8px;background:#f39c12;color:white;border:none;border-radius:8px;cursor:pointer;font-size:13px;font-weight:700;margin-bottom:6px;">📋 Responder</button>';
         }
         // Botón Compartir
-        popHtml += '<button onclick="compartirContenido(\'encuesta\',' + enc.id + ',\'' + encTituloSafe + '\',\'' + (enc.localidad || '').replace(/'/g,'') + '\')" style="width:100%;padding:7px 8px;background:#fff;color:#1B3B6F;border:1.5px solid #1B3B6F;border-radius:8px;cursor:pointer;font-size:12px;font-weight:600;margin-bottom:6px;">📤 Compartir encuesta</button>';
+        popHtml += '<button onclick="compartirContenido(\'encuesta\',' + (parseInt(enc.id,10)||0) + ',' + JSON.stringify(enc.titulo||'') + ',' + JSON.stringify(enc.localidad||'') + ')" style="width:100%;padding:7px 8px;background:#fff;color:#1B3B6F;border:1.5px solid #1B3B6F;border-radius:8px;cursor:pointer;font-size:12px;font-weight:600;margin-bottom:6px;">📤 Compartir encuesta</button>';
         popHtml += buildWTPopupSection('encuesta', enc.id, enc.titulo);
         popHtml += '</div></div>';
 

@@ -1,13 +1,13 @@
 <?php
 /**
- * API Encuestas v2 - Archivo NUEVO con código corregido
+ * API Encuestas v2 - OBSOLETO
+ *
+ * Este archivo usa la columna `activa` que ya no existe en la tabla encuestas.
+ * La columna correcta es `activo` (migración 037).
+ * Todo el tráfico se redirige a la API principal /api/encuestas.php.
  */
-
-ini_set('display_errors', 0);
-error_reporting(E_ALL);
-
-header('Content-Type: application/json; charset=utf-8');
-session_start();
+header('Location: /api/encuestas.php' . (isset($_SERVER['QUERY_STRING']) && $_SERVER['QUERY_STRING'] !== '' ? '?' . $_SERVER['QUERY_STRING'] : ''), true, 301);
+exit;
 
 function respond_success($data, $message = "OK") {
     echo json_encode(['success' => true, 'data' => $data, 'message' => $message]);
