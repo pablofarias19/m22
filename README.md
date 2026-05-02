@@ -1,0 +1,491 @@
+# Mapita
+
+Aplicación PHP/MySQL para registrar y visualizar negocios locales en un mapa interactivo (Leaflet.js).
+
+## Características
+
+- Autenticación de usuarios (registro, inicio de sesión, recuperación de contraseña)
+- Agregar, editar, eliminar y ver negocios con coordenadas en el mapa
+- Filtrar negocios por tipo y términos de búsqueda
+- Mostrar negocios como marcadores emoji animados en el mapa
+- Reseñas y valoraciones por negocio
+- Exportar lista de negocios a PDF
+- Panel de administración (usuarios y negocios)
+- API REST para acceso programático
+
+## Requisitos
+
+- PHP 7.4+
+- MySQL 5.7+ o MariaDB 10.3+
+- Servidor web (Apache/Nginx) con PHP
+- Extensión PDO MySQL habilitada
+- (Opcional) [Composer](https://getcomposer.org/) para autoloading y gestión de dependencias
+
+## Instalación
+
+1. **Clonar el repositorio:**
+   ```bash
+   git clone https://github.com/pablofarias19/mapita.git
+   cd mapita
+   ```
+
+2. **Configurar variables de entorno:**
+   ```bash
+   cp .env.example .env
+   # Editar .env con las credenciales reales de la base de datos
+   ```
+
+3. **Ejecutar la migración SQL:**
+   ```sql
+   -- Conectarse a la base de datos y ejecutar:
+   source config/migration.sql
+   ```
+
+4. **Instalar dependencias de Composer (requerido para exportación PDF):**
+   ```bash
+   composer install
+   ```
+   Esto instala [Dompdf](https://github.com/dompdf/dompdf) (generación de PDF en `brand_report.php`)
+   y demás dependencias declaradas en `composer.json`.
+   Sin este paso, el botón **Descargar PDF** del Reporte Ejecutivo devuelve un aviso de error;
+   los demás formatos (HTML, TXT, JSON) funcionan sin Composer.
+
+5. **Instalar dependencias de desarrollo (tests):**
+   ```bash
+   composer install --dev
+   ./vendor/bin/phpunit
+   ```
+
+## Estructura de directorios
+
+```
+mapita/
+├── admin/          Panel de administración
+├── api/            Endpoints REST (businesses.php, reviews.php, api_comercios.php)
+├── auth/           Autenticación (login, register, logout, reset_password)
+├── business/       CRUD de negocios (add, edit, view, my_businesses)
+├── config/         Configuración de BD y migration SQL
+├── controllers/    Controladores MVC
+├── core/           Database singleton, helpers (CSRF, security headers)
+├── css/            Estilos
+├── includes/       Funciones auxiliares
+├── models/         Business, Review
+├── public/         Front controller (index.php)
+├── tests/          Suite PHPUnit
+├── uploads/        Imágenes de negocios (generado automáticamente)
+└── views/          Vistas (mapa principal)
+```
+
+## API REST
+
+| Método | URL | Descripción | Auth |
+|--------|-----|-------------|------|
+| GET | `/api/businesses.php` | Lista negocios visibles | No |
+| GET | `/api/businesses.php?id=N` | Detalle de un negocio | No |
+| GET | `/api/businesses.php?type=X` | Filtrar por tipo | No |
+| GET | `/api/businesses.php?q=texto` | Buscar por nombre/dirección | No |
+| POST | `/api/businesses.php` | Crear negocio | Sí |
+| PUT | `/api/businesses.php?id=N` | Actualizar negocio | Sí |
+| DELETE | `/api/businesses.php?id=N` | Eliminar negocio | Sí |
+| GET | `/api/reviews.php?business_id=N` | Listar reseñas | No |
+| POST | `/api/reviews.php` | Crear/actualizar reseña | Sí |
+| DELETE | `/api/reviews.php?business_id=N` | Eliminar propia reseña | Sí |
+| GET | `/api/encuestas.php?action=aggregate&ids=1,2,3` | Agrega métricas de encuestas seleccionadas | No |
+| GET | `/api/wt.php?action=list&entity_type=negocio&entity_id=10` | Lista mensajes WT por entidad | No |
+| POST | `/api/wt.php` + `action=send` | Enviar mensaje WT (máx. 140, 5/min por usuario) | No |
+| POST | `/api/wt.php` + `action=heartbeat` | Presencia WT (heartbeat 20s) | No |
+| GET | `/api/wt.php?action=status&entity_type=negocio&entity_id=10` | Estado del canal WT entre viewer y propietario | No |
+| GET | `/api/wt_preferences.php` | Preferencias WT del usuario logueado | Sí |
+| POST | `/api/wt_preferences.php` + `action=save` | Guardar modo WT + áreas | Sí |
+| POST | `/api/wt_preferences.php` + `action=block` | Bloquear usuario WT (`user_id`) | Sí |
+| POST | `/api/wt_preferences.php` + `action=unblock` | Desbloquear usuario WT (`user_id`) | Sí |
+| GET | `/api/wt_preferences.php?action=blocks` | Listar usuarios bloqueados | Sí |
+
+## Migraciones nuevas (WT)
+
+Para habilitar Walkie Talkie (WT) en popups ejecutar:
+
+```sql
+source migrations/002_wt_tables.sql
+```
+
+## WT Canales Selectivos
+
+Para habilitar los canales selectivos WT (preferencias + bloqueos) ejecutar:
+
+```sql
+source migrations/011_wt_preferences.sql
+```
+
+### Modos de canal WT por usuario
+
+| Modo | Comportamiento |
+|------|----------------|
+| `open` (defecto) | Cualquier usuario puede enviar mensajes WT |
+| `selective` | Solo usuarios con al menos un área en común |
+| `closed` | WT desactivado; nadie puede enviar mensajes |
+
+Los usuarios pueden gestionar sus preferencias en `/views/wt_preferences.php`.
+
+## Migración de delegaciones por entidad
+
+Para habilitar delegación administrativa y transferencias de titularidad ejecutar:
+
+```sql
+source migrations/008_entity_delegations.sql
+```
+
+## API de delegaciones y transferencias
+
+- `GET /api/users/lookup.php?query=...` → busca usuario por `username` o `email` (requiere sesión)
+- `POST /api/business_delegations/create.php` (`business_id`, `user_id`, `password`) → agrega delegado admin (máx. 3)
+- `POST /api/business_delegations/revoke.php` (`business_id`, `user_id`, `password`) → revoca delegado
+- `GET /api/business_delegations/list.php?business_id=...` → lista delegados
+- `POST /api/brand_delegations/create.php` (`brand_id`, `user_id`, `password`) → agrega delegado admin (máx. 3)
+- `POST /api/brand_delegations/revoke.php` (`brand_id`, `user_id`, `password`) → revoca delegado
+- `GET /api/brand_delegations/list.php?brand_id=...` → lista delegados
+- `POST /api/ownership_transfers/initiate.php` (`entity_type`, `entity_id`, `to_user_id`) → inicia transferencia (pending)
+- `POST /api/ownership_transfers/accept.php` (`transfer_id`) → acepta y cambia titularidad
+- `POST /api/ownership_transfers/reject.php` (`transfer_id`) → rechaza transferencia
+
+## Módulo Sectores Industriales (Catálogo Admin)
+
+> Este módulo es un **catálogo de taxonomía** gestionado por administradores.
+> Los usuarios registrados crean sus **Industrias** usando este catálogo como clasificador.
+
+### Migración
+
+```sql
+source migrations/014_industrial_sectors.sql
+```
+
+### Endpoints
+
+| Método | URL | Descripción | Auth |
+|--------|-----|-------------|------|
+| GET | `/api/industrial_sectors.php` | Lista todos los sectores | No |
+| GET | `/api/industrial_sectors.php?id=N` | Detalle de un sector | No |
+| GET | `/api/industrial_sectors.php?type=mineria` | Filtrar por tipo | No |
+| GET | `/api/industrial_sectors.php?status=activo` | Filtrar por estado | No |
+| GET | `/api/industrial_sectors.php?limit=50&offset=0` | Paginación | No |
+| POST | `/api/industrial_sectors.php?action=create` | Crear sector | Admin |
+| POST | `/api/industrial_sectors.php?action=update&id=N` | Actualizar sector | Admin |
+| POST | `/api/industrial_sectors.php?action=delete&id=N` | Eliminar sector | Admin |
+
+### Valores permitidos
+
+| Campo | Valores |
+|-------|---------|
+| `type` | `mineria`, `energia`, `agro`, `infraestructura`, `inmobiliario`, `industrial` |
+| `status` | `proyecto`, `activo`, `potencial` |
+| `investment_level` | `bajo`, `medio`, `alto` |
+| `risk_level` | `bajo`, `medio`, `alto` |
+
+### Integración con el mapa
+
+Los sectores industriales se visualizan en el mapa principal como capas GeoJSON.
+Activar la capa desde la barra lateral: **🏭 Sectores Industriales**.
+Cada tipo se diferencia por color y el estado por opacidad.
+
+---
+
+## Módulo Industrias (Usuario registrado)
+
+Los usuarios registrados pueden crear, editar y archivar sus **Industrias** — entidades
+propias con datos completos, asociadas a un sector del catálogo admin.
+
+### Migraciones (ejecutar en orden)
+
+```sql
+source migrations/014_industrial_sectors.sql   -- catálogo de sectores
+source migrations/015_industries.sql           -- tabla de industrias de usuarios
+```
+
+### Rutas UI
+
+| Ruta | Descripción | Auth |
+|------|-------------|------|
+| `/industrias` | Dashboard: listado con búsqueda y filtros | Usuario |
+| `/industry_new` | Formulario para crear una industria | Usuario |
+| `/industry_edit?id=N` | Formulario para editar una industria | Owner / Admin |
+| `/admin?tab=sectores` | Catálogo de sectores (admin) | Admin |
+
+### Endpoints API
+
+| Método | URL | Descripción | Auth |
+|--------|-----|-------------|------|
+| GET | `/api/industries.php` | Lista mis industrias | Usuario |
+| GET | `/api/industries.php?id=N` | Detalle de una industria | Owner / Admin |
+| GET | `/api/industries.php?status=activa` | Filtrar por estado | Usuario |
+| GET | `/api/industries.php?sector_id=N` | Filtrar por sector | Usuario |
+| GET | `/api/industries.php?search=texto` | Buscar por nombre | Usuario |
+| POST | `/api/industries.php?action=create` | Crear industria | Usuario |
+| POST | `/api/industries.php?action=update&id=N` | Actualizar industria | Owner / Admin |
+| POST | `/api/industries.php?action=archive&id=N` | Archivar industria | Owner / Admin |
+| POST | `/api/industries.php?action=delete&id=N` | Eliminar industria | Owner / Admin |
+
+### Campos de la tabla `industries`
+
+| Campo | Tipo | Descripción |
+|-------|------|-------------|
+| `id` | INT | PK |
+| `user_id` | INT | Propietario (FK a users) |
+| `industrial_sector_id` | INT | Sector del catálogo (FK, nullable) |
+| `business_id` | INT | Negocio relacionado (nullable) |
+| `brand_id` | INT | Marca relacionada (nullable) |
+| `name` | VARCHAR(255) | Nombre de la industria |
+| `description` | TEXT | Descripción |
+| `website` | VARCHAR(500) | URL del sitio |
+| `contact_email` | VARCHAR(255) | Email de contacto |
+| `contact_phone` | VARCHAR(50) | Teléfono |
+| `country` / `region` / `city` | VARCHAR | Ubicación |
+| `employees_range` | ENUM | Rango de empleados |
+| `annual_revenue` | ENUM | Escala (micro → corporación) |
+| `certifications` | TEXT | Certs separadas por coma |
+| `naics_code` / `isic_code` | VARCHAR(20) | Códigos de clasificación |
+| `status` | ENUM | `borrador` / `activa` / `archivada` |
+| `created_at` / `updated_at` | DATETIME | Timestamps |
+
+### Permisos
+
+- **Usuario registrado**: ve y gestiona solo sus propias industrias.
+- **Admin**: puede ver/editar todas las industrias y gestionar el catálogo de sectores.
+
+### Relaciones entre Negocios, Marcas e Industrias
+
+Una `industry` puede vincularse opcionalmente a:
+- Un **negocio** (`business_id` → `businesses.id`, ON DELETE SET NULL)
+- Una **marca** (`brand_id` → `brands.id`, ON DELETE SET NULL)
+
+Ambas relaciones son opcionales (nullable). La integridad referencial se aplica mediante
+foreign keys en la base de datos (migración `023_relations_fk_image_limits.sql`).
+
+```sql
+-- Ejecutar para activar FK constraints y crear tabla industry_images:
+source migrations/023_relations_fk_image_limits.sql
+```
+
+Las relaciones genéricas entre cualquier par de entidades (negocios ↔ marcas, etc.)
+se gestionan también a través de la tabla `entidad_relaciones` y el endpoint
+`GET/POST /api/relaciones.php`.
+
+
+
+- Contraseñas hasheadas con `password_hash(PASSWORD_DEFAULT)`
+- Protección CSRF en todos los formularios
+- Validación y saneamiento de entradas en el servidor
+- PDO con prepared statements (prevención de SQL injection)
+- Cabeceras HTTP de seguridad (CSP, X-Frame-Options, etc.)
+- Credenciales de BD en `.env` (nunca en el código)
+- Directorio `uploads/` protegido con `.htaccess`
+
+## Tests
+
+```bash
+./vendor/bin/phpunit
+```
+
+Los tests cubren validación de negocios, validación de contraseñas, helpers CSRF,
+límites de carga de imágenes y relaciones entre Industrias, Negocios y Marcas.
+
+---
+
+## Límites de imágenes
+
+| Entidad | Archivo | Máx. archivos | Tamaño máximo | API |
+|---------|---------|:-------------:|:-------------:|-----|
+| **Negocio** | Foto de galería | 2 | 120 KB | `POST /api/upload_business_gallery.php?action=upload` |
+| **Industria** | Foto de galería | 2 | 120 KB | `POST /api/upload_industry_gallery.php?action=upload` |
+| **Marca** | Logo (ícono de mapa) | 1 | 120 KB | `POST /api/upload_brand_logo.php?action=upload` |
+| **Marca** | Imagen de galería | 1 | 120 KB | `POST /api/brand-gallery.php?action=upload` |
+
+> **Nota:** si tu imagen supera el límite podés comprimirla gratuitamente en [squoosh.app](https://squoosh.app) o [tinypng.com](https://tinypng.com).
+
+### Probar la carga de imágenes
+
+```bash
+# Subir foto a un negocio (requiere sesión activa / cookie de sesión)
+curl -b "PHPSESSID=<sesión>" \
+     -F "action=upload" -F "business_id=1" \
+     -F "photo=@/ruta/foto.jpg" \
+     https://tu-dominio/api/upload_business_gallery.php
+
+# Subir foto a una industria
+curl -b "PHPSESSID=<sesión>" \
+     -F "action=upload" -F "industry_id=1" \
+     -F "photo=@/ruta/foto.jpg" \
+     https://tu-dominio/api/upload_industry_gallery.php
+
+# Subir logo de marca
+curl -b "PHPSESSID=<sesión>" \
+     -F "action=upload" -F "brand_id=1" \
+     -F "logo=@/ruta/logo.png" \
+     https://tu-dominio/api/upload_brand_logo.php
+```
+
+---
+
+## CMS Multilingüe (contenido técnico/avanzado)
+
+El CMS interno permite gestionar páginas de contenido técnico (módulos Avanzado, Jurídico, Fiscal, etc.)
+con traducciones independientes por idioma y un glosario controlado de términos legales/estratégicos.
+
+### 1. Configurar las tablas
+
+Ejecutar el archivo SQL provisto (requiere acceso a MySQL):
+
+```sql
+source sql/cms.sql
+```
+
+Crea tres tablas:
+
+| Tabla | Descripción |
+|-------|-------------|
+| `cms_pages` | Páginas canónicas (slug, módulo, estado) |
+| `cms_page_translations` | Traducciones por idioma: título, body Markdown, resumen, estado de revisión |
+| `cms_glossary_terms` | Glosario técnico: término + definición por dominio e idioma |
+
+### 2. Usar el editor (admin)
+
+Navegar a `/cms-editor` (requiere sesión de administrador).
+
+Funciones disponibles:
+
+- **Listar / crear páginas**: panel lateral con botón **+ Nueva página**.
+- **Editar traducciones**: seleccionar una página → elegir idioma en las pestañas de colores → editar título, resumen y contenido Markdown → guardar.
+- **Glosario técnico**: sección colapsable al pie del editor para añadir/actualizar términos por dominio (`legal`, `tax`, `strategy`, `web`, `branding`) e idioma.
+
+### 3. API CMS
+
+| Método | URL | Descripción | Auth |
+|--------|-----|-------------|------|
+| GET | `/api/cms.php` | Lista todas las páginas | No |
+| GET | `/api/cms.php?slug=&lang=` | Obtiene traducción con fallback (exact→base→en→es) | No |
+| POST | `/api/cms.php` + `action=create_page` | Crea una página | Admin |
+| PUT | `/api/cms.php` + `action=upsert_translation` | Crea/actualiza traducción | Admin |
+| PUT | `/api/cms.php` + `action=upsert_glossary` | Crea/actualiza término de glosario | Admin |
+
+Ejemplo de respuesta GET con `slug=legal-assistance&lang=it`:
+
+```json
+{
+  "success": true,
+  "data": {
+    "page": { "id": 1, "slug": "legal-assistance", "module": "advanced", "status": "published" },
+    "translation": { "lang": "it", "title": "Assistenza legale", "body_md": "...", "summary": "..." },
+    "resolved_lang": "it",
+    "requested_lang": "it"
+  }
+}
+```
+
+Cadena de fallback: idioma exacto (`it-IT`) → base (`it`) → `en` → `es`.
+
+### 4. Idiomas soportados
+
+Los siguientes idiomas están habilitados en la interfaz y en el CMS:
+
+| Código | Idioma |
+|--------|--------|
+| `es` | Español (base) |
+| `en` | English |
+| `de` | Deutsch |
+| `fr` | Français |
+| `pt` | Português |
+| `it` | Italiano |
+| `ru` | Русский |
+| `el` | Ελληνικά |
+| `tr` | Türkçe |
+| `ar` | العربية |
+| `zh` | 中文 |
+| `ja` | 日本語 |
+| `ko` | 한국어 |
+| `no` | Norsk |
+
+Los archivos de traducción de interfaz viven en `lang/{código}.php`.
+
+---
+
+## Módulo: Plano Sector Comercial + Institucional & Normativo + Radar Legal
+
+### Descripción general
+
+Este módulo amplía el sistema con un nuevo "Plano Sector" para Sector Comercial y enriquece el Sector Industrial existente, incorporando:
+
+1. **Sector Comercial** (`commercial_sectors`) — catálogo de sectores (retail, finanzas, turismo, etc.)
+2. **Cámaras y Agencias** (`chambers`, `agencies`) — entidades institucionales/normativas creables desde el ADMIN, vinculables a múltiples sectores (industrial o comercial) con relación many-to-many.
+3. **Líneas de Política** (`policy_lines`) — documentos/entradas con metadata completa (título, resumen, tipo: propia/gobierno, jurisdicción, fuente/link, fechas, tags, estado).
+4. **Mapa de Competencias** (`competencies`) — mapa estructurado de facultades (aprobar, rechazar, controlar, auditar, sancionar, dictamen, emitir, fiscalizar) por organismo/órgano/responsable.
+5. **Radar Legal** (tablas `radar_*`) — submódulo diferenciado habilitado por sector para consultar:
+   - Modos de transporte (marítimo/aéreo/terrestre/multimodal) + puertos
+   - Destinaciones aduaneras (importación/exportación)
+   - Restricciones (prohibiciones, dumping, licencias)
+   - Controversias y delitos aduaneros
+   - Tipos de contrato internacional
+
+### Migración
+
+```sql
+-- Aplicar la migración:
+-- migrations/030_sector_comercial_camaras_radar.sql
+-- Incluye seeds mínimos de ejemplo.
+```
+
+### Rutas de acceso
+
+| URL | Descripción |
+|-----|-------------|
+| `/sector-comercial` | Listado de sectores comerciales |
+| `/sector-comercial?id=N` | Hub del sector comercial N (tab=overview por defecto) |
+| `/sector-comercial?id=N&tab=institucional` | Módulo Institucional & Normativo |
+| `/sector-comercial?id=N&tab=radar` | Módulo Radar Legal |
+| `/sector-industrial?id=N` | Hub del sector industrial N |
+| `/sector-industrial?id=N&tab=institucional` | Institucional & Normativo (industrial) |
+| `/sector-industrial?id=N&tab=radar` | Radar Legal (industrial) |
+
+### Rutas ADMIN
+
+| Tab en /admin | Descripción |
+|---------------|-------------|
+| `?tab=comercial` | CRUD de Sectores Comerciales |
+| `?tab=camaras` | CRUD de Cámaras |
+| `?tab=agencias` | CRUD de Agencias |
+| `?tab=lineas` | CRUD de Líneas de Política |
+| `?tab=competencias` | CRUD de Competencias/Facultades |
+| `?tab=radar_legal` | Estadísticas y configuración del Radar Legal por sector |
+
+### APIs
+
+| Endpoint | Descripción |
+|----------|-------------|
+| `GET/POST /api/commercial_sectors.php` | CRUD de sectores comerciales |
+| `GET/POST /api/chambers.php` | CRUD de cámaras + sync de sectores |
+| `GET/POST /api/agencies.php` | CRUD de agencias + sync de sectores |
+| `GET/POST /api/policy_lines.php` | CRUD de líneas de política |
+| `GET/POST /api/competencies.php` | CRUD de competencias |
+| `GET/POST /api/radar_legal.php` | Catálogos Radar Legal + configuración por sector |
+
+### Entidades y relaciones
+
+```
+commercial_sectors          ←→ chamber_sector   ←→ chambers
+                            ←→ agency_sector    ←→ agencies
+industrial_sectors          ←→ chamber_sector
+                            ←→ agency_sector
+
+chambers / agencies → policy_lines (source_type + source_id)
+chambers / agencies → competencies (source_type + source_id)
+
+sector_radar_settings (sector_type + sector_id → enabled flag)
+radar_transport_modes → radar_ports
+radar_destinations
+radar_restrictions
+radar_disputes
+radar_contract_types
+```
+
+### Permisos
+
+- **Lectura** (vistas públicas `/sector-comercial`, `/sector-industrial`): sin autenticación.
+- **Escritura** (CRUD desde API y admin): requiere `$_SESSION['is_admin'] = true`.

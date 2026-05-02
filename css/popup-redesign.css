@@ -1,0 +1,2057 @@
+/* ─── POPUP REDESIGN - PROFESSIONAL STYLING ─────────────────────────────── */
+
+.leaflet-popup-content {
+    max-width: 320px !important;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+    padding: 0 !important;
+    border-radius: 12px !important;
+    overflow: hidden;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.16) !important;
+}
+
+.leaflet-popup-content-wrapper {
+    border-radius: 12px !important;
+    padding: 0 !important;
+    box-shadow: none !important;   /* quitamos la sombra gris default de Leaflet */
+    background: transparent !important;
+}
+
+.leaflet-popup-tip {
+    background: white !important;
+    box-shadow: none !important;   /* sin sombra en el triángulo */
+}
+.leaflet-popup-tip-container {
+    /* sin sombra adicional en el contenedor del triángulo */
+    filter: drop-shadow(0 4px 8px rgba(0,0,0,0.12));
+}
+
+.leaflet-popup .popup-header {
+    padding: 14px 16px;
+    background: linear-gradient(135deg, #1B3B6F 0%, #2E5FA3 60%, #667eea 100%);
+    color: white;
+    border-radius: 12px 12px 0 0;
+}
+
+.leaflet-popup .popup-header-inner {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+}
+
+.leaflet-popup .popup-header-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 8px;
+    background: rgba(255,255,255,0.18);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    flex-shrink: 0;
+    overflow: hidden;
+}
+
+.leaflet-popup .popup-header-icon img {
+    width: 42px;
+    height: 42px;
+    object-fit: cover;
+    border-radius: 8px;
+    margin: 0;
+    border: none;
+}
+
+.leaflet-popup .popup-header-text {
+    flex: 1;
+    min-width: 0;
+}
+
+.leaflet-popup .popup-type-badge {
+    display: inline-block;
+    background: rgba(255,255,255,0.22);
+    border-radius: 10px;
+    padding: 2px 8px;
+    font-size: 11px;
+    color: rgba(255,255,255,0.95);
+    font-weight: 500;
+    margin-top: 3px;
+    white-space: nowrap;
+}
+
+.leaflet-popup .popup-header h3 {
+    margin: 0 0 2px 0;
+    font-size: 17px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    line-height: 1.3;
+    color: white;
+}
+
+.leaflet-popup .popup-header .status-badge {
+    display: inline-block;
+    margin-top: 6px;
+    padding: 4px 10px;
+    background: rgba(255, 255, 255, 0.25);
+    border-radius: 16px;
+    font-size: 12px;
+    font-weight: 500;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+/* ─── POPUP BODY ──────────────────────────────────────────────────────── */
+.popup-body {
+    padding: 16px;
+    font-size: 14px;
+    line-height: 1.6;
+    color: #2c3e50;
+    background: white;
+    /* Limit height on all screens so the popup stays "square" and scrolls */
+    max-height: 320px;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.popup-section {
+    margin-bottom: 12px;
+}
+
+.popup-section:last-child {
+    margin-bottom: 0;
+}
+
+.popup-label {
+    font-weight: 600;
+    color: #667eea;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+    display: block;
+}
+
+.popup-value {
+    color: #2c3e50;
+    font-size: 14px;
+    word-break: break-word;
+}
+
+/* ─── POPUP ACTION GROUP (icon + label) — visible en todas las pantallas ─ */
+.popup-action-group {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    flex: 0 0 auto;
+}
+
+/* Etiqueta visible siempre */
+.popup-action-label {
+    display: block;
+    font-size: 9px;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: #6b7280;
+    letter-spacing: 0.3px;
+    text-align: center;
+    line-height: 1.1;
+    white-space: nowrap;
+}
+
+/* Botones anchos ($$$ / Empleos / Inmuebles) */
+.popup-action-group--wide {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    flex: 1;
+    min-width: 70px;
+}
+
+/* ─── POPUP FOOTER ────────────────────────────────────────────────────── */
+.popup-footer {
+    padding: 10px;
+    background: #f8f9fa;
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    border-top: 1px solid #e9ecef;
+    border-radius: 0 0 12px 12px;
+    align-items: flex-start;
+    justify-content: center;
+}
+
+/* Ícono: cuadrado 40×40 cuando está dentro de un grupo */
+.popup-action-group .popup-action {
+    width: 40px;
+    height: 40px;
+    min-height: 40px;
+    max-width: 40px;
+    flex: none;
+    padding: 0;
+    font-size: 18px;
+    border-radius: 10px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+}
+
+.popup-action {
+    flex: 1;
+    min-width: 34px;
+    min-height: 36px;
+    max-width: 44px;
+    padding: 6px 4px;
+    background: #667eea;
+    color: white !important;
+    text-decoration: none;
+    border-radius: 6px;
+    font-size: 16px;
+    text-align: center;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    line-height: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    transition: filter 0.15s, transform 0.15s, box-shadow 0.15s;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Text buttons (Inmuebles / Empleos / $$$) */
+.popup-action--text {
+    flex: 1;
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 6px 10px;
+    height: 36px;
+    min-height: 36px;
+    border-radius: 8px;
+    overflow: visible;
+}
+
+.popup-action:hover {
+    filter: brightness(1.12);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.22);
+}
+
+.popup-action:active {
+    transform: translateY(0);
+    filter: brightness(0.95);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+}
+
+.popup-action:focus-visible {
+    outline: 2px solid rgba(255,255,255,0.8);
+    outline-offset: 2px;
+}
+
+.popup-action.secondary {
+    background: #6c757d;
+}
+
+.popup-action.secondary:hover {
+    background: #5a6268;
+}
+
+/* ─── PHOTO SECTION IN POPUP ──────────────────────────────────────────── */
+.popup-body img:not(.popup-inm-img):not(.popup-inm-inmobiliaria-logo) {
+    width: 100%;
+    height: 140px;
+    object-fit: cover;
+    border-radius: 6px;
+    margin: 8px 0;
+    display: block;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+.popup-body img:not(.popup-inm-img):not(.popup-inm-inmobiliaria-logo):hover {
+    transform: scale(1.02);
+}
+
+/* ─── RATING SECTION ──────────────────────────────────────────────────── */
+.popup-rating {
+    color: #f39c12;
+    font-weight: 600;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+/* ─── RESPONSIVE ──────────────────────────────────────────────────────── */
+@media (max-width: 480px) {
+    /* Prevent popup overflow on narrow screens and constrain total height
+       so Leaflet autoPan does not need to pan far (avoids the auto-close
+       glitch caused by autoPan-triggered touch events on mobile). */
+    .leaflet-popup-content-wrapper {
+        max-width: 92vw !important;
+        width: 92vw !important;
+    }
+
+    .leaflet-popup-content {
+        max-width: calc(92vw - 4px) !important;
+        overflow-x: hidden !important;
+    }
+
+    /* Compact header */
+    .leaflet-popup .popup-header {
+        padding: 10px 12px;
+    }
+
+    /* ── Body compacto: el popup no ocupa toda la pantalla ── */
+    .popup-body {
+        max-height: calc(50vh - 110px) !important;
+        overflow-y: auto !important;
+        overflow-x: hidden !important;
+        padding: 8px 10px 6px !important;
+    }
+
+    /* ── Hide business description on mobile — saves space ── */
+    .popup-desc {
+        display: none !important;
+    }
+
+    /* ── Footer mobile: 4 grupos por fila ── */
+    .popup-footer {
+        gap: 6px !important;
+        padding: 10px !important;
+        align-items: flex-start !important;
+    }
+
+    /* Grupo emoji: exactamente 1/4 del footer → 4 por fila */
+    .popup-action-group {
+        flex: 0 0 calc(25% - 5px) !important;
+        max-width: calc(25% - 5px) !important;
+    }
+
+    /* Grupo texto (Inmuebles/Empleos/$$$): 1/2 → 2 por fila */
+    .popup-action-group--wide {
+        flex: 0 0 calc(50% - 3px) !important;
+        max-width: calc(50% - 3px) !important;
+        min-width: 0 !important;
+    }
+
+    /* Botones wide llenan su grupo */
+    .popup-action-group--wide .popup-action,
+    .popup-action-group--wide .popup-action--text {
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+        height: 36px !important;
+        min-height: 36px !important;
+        font-size: 12px !important;
+        font-weight: 700 !important;
+        padding: 0 8px !important;
+        border-radius: 8px !important;
+    }
+
+    /* Etiqueta bajo cada ícono */
+    .popup-action-label {
+        display: block !important;
+        font-size: 9px !important;
+        font-weight: 700 !important;
+        text-transform: uppercase !important;
+        color: #6b7280 !important;
+        letter-spacing: 0.3px !important;
+        text-align: center !important;
+        line-height: 1.1 !important;
+        white-space: nowrap !important;
+    }
+
+    /* ── Hide WT (Walkie Talkie) system section on mobile ── */
+    /* Phone / WhatsApp actions in the footer are sufficient */
+    .popup-wt-section {
+        display: none !important;
+    }
+
+    /* ── Hide verbose brand details on mobile ── */
+    /* INPI registration grid: too detailed for small screens */
+    .brand-inpi-grid {
+        display: none !important;
+    }
+
+    /* Legal info tooltip: hide on mobile */
+    .brand-legal-tooltip,
+    .brand-legal-hint-btn {
+        display: none !important;
+    }
+
+    /* Protection / risk row: hide on mobile */
+    .brand-protection-row {
+        display: none !important;
+    }
+}
+
+/* ─── BRAND POPUP HEADER VARIANT ─────────────────────────────────────── */
+.leaflet-popup .popup-header.popup-header--brand {
+    background: linear-gradient(135deg, #4a1469 0%, #7b2fa8 60%, #9b59b6 100%);
+}
+
+/* ─── BRAND POPUP: compact body (scrollable, more square) ────────────── */
+/* Brand popups have many sections; constrain height and enable scroll */
+.leaflet-popup .popup-body:has(.brand-status-row) {
+    max-height: 268px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 12px 14px;
+}
+
+/* ─── INMUEBLE POPUP HEADER VARIANT ──────────────────────────────────── */
+.leaflet-popup .popup-header.popup-header--inm {
+    background: linear-gradient(135deg, #064e3b 0%, #065f46 60%, #16a34a 100%);
+}
+
+.popup-inm-price {
+    font-size: 14px;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.95);
+    margin-top: 3px;
+    letter-spacing: -0.3px;
+}
+
+/* ─── INMUEBLE META CHIPS ─────────────────────────────────────────────── */
+.popup-inm-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-bottom: 10px;
+}
+
+.popup-inm-chip {
+    background: #f0fdf4;
+    color: #166534;
+    border: 1px solid #bbf7d0;
+    border-radius: 10px;
+    padding: 2px 8px;
+    font-size: 11px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.popup-inm-chip--fin {
+    background: #fef3c7;
+    color: #92400e;
+    border-color: #fde68a;
+}
+
+/* ─── INMOBILIARIA CARD IN INMUEBLE POPUP (kept for backward compat) ──── */
+.popup-inmobiliaria-card {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 8px 10px;
+    margin-top: 10px;
+}
+
+/* ─── VER-INM BANNER (fixed card at bottom of map) ───────────────────── */
+#ver-inm-banner {
+    position: fixed;
+    bottom: 70px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 9999;
+    width: 300px;
+    max-width: calc(100vw - 24px);
+    background: #00695C;
+    color: white;
+    border-radius: 16px;
+    padding: 14px 14px 14px 16px;
+    box-shadow: 0 8px 28px rgba(0, 80, 65, 0.38);
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    animation: vibSlideUp 0.25s cubic-bezier(0.34, 1.4, 0.64, 1);
+}
+
+@keyframes vibSlideUp {
+    from { opacity: 0; transform: translateX(-50%) translateY(16px) scale(0.96); }
+    to   { opacity: 1; transform: translateX(-50%) translateY(0)     scale(1);    }
+}
+
+.vib-icon {
+    flex-shrink: 0;
+    width: 44px;
+    height: 44px;
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+}
+
+.vib-body {
+    flex: 1;
+    min-width: 0;
+}
+
+.vib-role {
+    font-size: 9px;
+    font-weight: 700;
+    color: rgba(178, 236, 220, 0.9);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    margin-bottom: 2px;
+}
+
+.vib-name {
+    font-size: 14px;
+    font-weight: 800;
+    color: #fff;
+    line-height: 1.25;
+    margin-bottom: 7px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.vib-count {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.vib-count-badge {
+    background: #fff;
+    color: #00695C;
+    border-radius: 8px;
+    padding: 2px 9px;
+    font-size: 13px;
+    font-weight: 900;
+    line-height: 1.4;
+}
+
+.vib-count-label {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.82);
+    font-weight: 500;
+    font-style: italic;
+}
+
+.vib-close {
+    flex-shrink: 0;
+    background: rgba(255, 255, 255, 0.15);
+    border: none;
+    border-radius: 50%;
+    color: rgba(255, 255, 255, 0.75);
+    cursor: pointer;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+    line-height: 1;
+    transition: background 0.15s, color 0.15s;
+    margin-top: 1px;
+}
+
+.vib-close:hover {
+    background: rgba(255, 255, 255, 0.28);
+    color: #fff;
+}
+
+.popup-inmobiliaria-card__logo {
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    overflow: hidden;
+    flex-shrink: 0;
+    background: #e2e8f0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+}
+
+.popup-inmobiliaria-card__logo img {
+    width: 32px;
+    height: 32px;
+    object-fit: cover;
+    border-radius: 6px;
+    margin: 0;
+    border: none;
+    display: block;
+}
+
+.popup-inmobiliaria-card__info {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+}
+
+.popup-inmobiliaria-card__label {
+    font-size: 10px;
+    color: #6b7280;
+    text-transform: uppercase;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    line-height: 1;
+}
+
+.popup-inmobiliaria-card__name {
+    font-size: 13px;
+    font-weight: 700;
+    color: #1f2937;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.popup-inmobiliaria-card__focus-btn {
+    border: none;
+    background: #dcfce7;
+    color: #15803d;
+    border-radius: 6px;
+    padding: 5px 9px;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.15s;
+    font-family: inherit;
+    flex-shrink: 0;
+    line-height: 1.3;
+}
+
+.popup-inmobiliaria-card__focus-btn:hover,
+.popup-inmobiliaria-card__focus-btn:focus {
+    background: #bbf7d0;
+    outline: 2px solid #16a34a;
+    outline-offset: 1px;
+}
+
+/* ─── COMPACT INMOBILIARIA ROW (replaces old two-box card) ───────────── */
+.popup-inm-inmobiliaria-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 8px;
+    font-size: 12px;
+    color: #374151;
+}
+
+.popup-inm-inmobiliaria-logo {
+    width: 20px;
+    height: 20px;
+    border-radius: 4px;
+    object-fit: cover;
+    flex-shrink: 0;
+}
+
+.popup-inm-inmobiliaria-name {
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* ─── INMUEBLE PHOTO MEDIA CONTAINER ─────────────────────────────────── */
+.popup-inm-media {
+    width: 100%;
+    height: 110px;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    overflow: hidden;
+    flex-shrink: 0;
+    position: relative;
+    background: #f0fdf4;
+}
+
+.popup-inm-media .popup-inm-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 8px;
+    display: block;
+    margin: 0;
+    cursor: default;
+    transition: none;
+}
+
+.popup-inm-media .popup-inm-placeholder {
+    width: 100%;
+    height: 100%;
+    margin-bottom: 0;
+    border-radius: 8px;
+}
+
+/* Sin foto: bloque compacto en desktop */
+.popup-inm-media--no-photo {
+    height: 56px;
+    background: #f1f5f9;
+    border: 1px dashed #cbd5e1;
+}
+
+.popup-inm-media--no-photo .popup-inm-placeholder {
+    background: transparent;
+    border: none;
+    font-size: 1.6em;
+    color: #94a3b8;
+    flex-direction: row;
+    gap: 8px;
+}
+
+/* Legacy class kept for backward compatibility */
+.popup-inm-photo {
+    width: 100%;
+    height: 120px;
+    object-fit: cover;
+    border-radius: 6px;
+    margin-bottom: 10px;
+    display: block;
+    cursor: default;
+}
+
+/* ─── INMUEBLE POPUP ACTION VARIANTS ─────────────────────────────────── */
+.popup-action.popup-action--inm {
+    background: #16a34a;
+    color: #fff;
+}
+
+.popup-action.popup-action--inm:hover {
+    background: #15803d;
+    box-shadow: 0 4px 12px rgba(22, 163, 74, 0.3);
+}
+
+.popup-action.popup-action--inm:focus-visible {
+    outline: 2px solid #16a34a;
+    outline-offset: 2px;
+}
+
+/* ─── BRAND STATUS BADGES ─────────────────────────────────────────────── */
+.brand-status-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin-bottom: 10px;
+}
+
+.brand-status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    padding: 3px 9px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 1.4;
+    white-space: nowrap;
+}
+
+.brand-status-badge--inpi {
+    background: #d4edda;
+    color: #155724;
+}
+
+.brand-status-badge--hecho {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.brand-status-badge--franquicia {
+    background: #e8d5f5;
+    color: #6a1b9a;
+}
+
+.brand-status-badge--licencia {
+    background: #d1ecf1;
+    color: #0c5460;
+}
+
+/* ─── INPI DATA GRID ──────────────────────────────────────────────────── */
+.brand-inpi-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 5px 8px;
+    background: #f8f0ff;
+    border-left: 3px solid #9b59b6;
+    border-radius: 0 8px 8px 0;
+    padding: 8px 10px;
+    margin-bottom: 10px;
+}
+
+.brand-inpi-item {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+}
+
+.brand-inpi-item .label {
+    font-size: 10px;
+    color: #9b59b6;
+    text-transform: uppercase;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+}
+
+.brand-inpi-item .value {
+    font-size: 12px;
+    color: #2c3e50;
+    font-weight: 500;
+}
+
+/* ─── BRAND PROTECTION / RISK PILLS ──────────────────────────────────── */
+.brand-protection-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin-bottom: 8px;
+}
+
+/* ─── BRAND LEGAL HINT (?) ────────────────────────────────────────────── */
+.brand-legal-hint-btn {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #9b59b6;
+    color: white;
+    border: none;
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+    line-height: 1;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-family: inherit;
+    transition: background 0.15s ease;
+    margin-left: auto;
+    align-self: center;
+}
+
+.brand-legal-hint-btn:hover,
+.brand-legal-hint-btn:focus {
+    background: #6a2fa2;
+    outline: 2px solid #9b59b6;
+    outline-offset: 1px;
+}
+
+.brand-legal-tooltip {
+    display: none;
+    background: #fdf8ff;
+    border-left: 3px solid #9b59b6;
+    border-radius: 0 8px 8px 0;
+    padding: 10px 12px;
+    margin-bottom: 10px;
+    font-size: 12px;
+    line-height: 1.55;
+    color: #333;
+}
+
+.brand-legal-tooltip p {
+    margin: 0 0 6px;
+}
+
+.brand-legal-tooltip p:last-child {
+    margin: 0;
+}
+
+.brand-legal-tooltip.brand-legal-tooltip--open {
+    display: block;
+}
+
+.brand-legal-link {
+    color: #6a2fa2;
+    font-weight: 600;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
+
+.brand-legal-link:hover {
+    color: #4a1469;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   INMUEBLE V2 POPUP — Desktop hero design (≥ 481 px)
+   Mobile (≤ 480 px) reverts to compact green-header look via overrides below
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* Popup-wrapper max-width override for the v2 card */
+.inm-v2-popup .leaflet-popup-content-wrapper,
+.inm-v2-popup .leaflet-popup-content {
+    max-width: 360px !important;
+    width: 360px !important;
+}
+
+/* Root container */
+.inm-v2 {
+    border-radius: 12px;
+    overflow: hidden;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    width: 100%;
+}
+
+/* ── Hero: full-width image with gradient overlay ── */
+.inm-v2-hero {
+    position: relative;
+    height: 200px;
+    overflow: hidden;
+    background: linear-gradient(135deg, #064e3b 0%, #065f46 60%, #16a34a 100%);
+    display: block;
+    flex-shrink: 0;
+}
+
+.inm-v2-hero-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    margin: 0;
+    border-radius: 0;
+    cursor: default;
+    transition: none;
+}
+
+.inm-v2-hero-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 3.5em;
+}
+
+.inm-v2-hero-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to bottom, rgba(0,0,0,0.08) 0%, rgba(0,0,0,0.65) 100%);
+    pointer-events: none;
+}
+
+/* Venta / Alquiler badge — top-left */
+.inm-v2-badge {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    padding: 4px 11px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    z-index: 2;
+}
+
+.inm-v2-badge--venta {
+    background: rgba(5, 150, 105, 0.82);
+    color: #fff;
+    border: 1px solid rgba(255,255,255,0.28);
+}
+
+.inm-v2-badge--alquiler {
+    background: rgba(37, 99, 235, 0.82);
+    color: #fff;
+    border: 1px solid rgba(255,255,255,0.28);
+}
+
+/* Title + price overlaid at the bottom of the hero */
+.inm-v2-hero-info {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 10px 14px 13px;
+    z-index: 2;
+}
+
+.inm-v2-hero-title {
+    font-size: 14px;
+    font-weight: 800;
+    color: #fff;
+    line-height: 1.3;
+    margin: 0 0 4px;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.55);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.inm-v2-hero-price {
+    font-size: 20px;
+    font-weight: 900;
+    color: #fff;
+    text-shadow: 0 1px 5px rgba(0,0,0,0.65);
+    letter-spacing: -0.5px;
+    line-height: 1.2;
+}
+
+/* ── Mobile header — hidden on desktop, shown on mobile ── */
+.inm-v2-mob-hdr {
+    display: none;
+    padding: 12px 14px;
+    background: linear-gradient(135deg, #064e3b 0%, #065f46 60%, #16a34a 100%);
+    align-items: flex-start;
+    gap: 10px;
+    color: white;
+    flex-shrink: 0;
+}
+
+.inm-v2-mob-hdr-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 8px;
+    background: rgba(255,255,255,0.18);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    flex-shrink: 0;
+}
+
+.inm-v2-mob-hdr-text {
+    flex: 1;
+    min-width: 0;
+}
+
+.inm-v2-mob-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: #fff;
+    margin: 0 0 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.inm-v2-mob-price {
+    font-size: 13px;
+    font-weight: 700;
+    color: rgba(255,255,255,0.9);
+}
+
+/* ── Body ── */
+.inm-v2-body {
+    padding: 14px 16px 8px;
+    background: white;
+    font-size: 13px;
+    color: #374151;
+    line-height: 1.55;
+    max-height: 240px;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+/* Feature chips */
+.inm-v2-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin-bottom: 10px;
+}
+
+.inm-v2-chip {
+    background: #f0fdf4;
+    color: #166534;
+    border: 1px solid #bbf7d0;
+    border-radius: 10px;
+    padding: 3px 9px;
+    font-size: 11px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.inm-v2-chip--fin {
+    background: #fef3c7;
+    color: #92400e;
+    border-color: #fde68a;
+}
+
+/* Description */
+.inm-v2-desc {
+    margin: 0 0 10px;
+    font-size: 12px;
+    line-height: 1.55;
+    color: #4b5563;
+}
+
+/* Address block */
+.inm-v2-address {
+    margin-bottom: 10px;
+}
+
+.inm-v2-address-label {
+    display: block;
+    font-size: 10px;
+    font-weight: 700;
+    color: #059669;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 2px;
+}
+
+.inm-v2-address-val {
+    font-size: 13px;
+    color: #1f2937;
+    font-weight: 500;
+}
+
+/* Agent / Inmobiliaria card */
+.inm-v2-agent {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 8px 10px;
+    margin-bottom: 4px;
+}
+
+.inm-v2-agent-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background: #dcfce7;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    flex-shrink: 0;
+    overflow: hidden;
+}
+
+.inm-v2-agent-avatar img {
+    width: 32px;
+    height: 32px;
+    object-fit: cover;
+    border-radius: 8px;
+    margin: 0;
+    border: none;
+    display: block;
+}
+
+.inm-v2-agent-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.inm-v2-agent-role {
+    font-size: 10px;
+    color: #6b7280;
+    text-transform: uppercase;
+    font-weight: 600;
+    letter-spacing: 0.4px;
+    line-height: 1;
+    margin-bottom: 2px;
+}
+
+.inm-v2-agent-name {
+    font-size: 13px;
+    font-weight: 700;
+    color: #1f2937;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* ── Action bar ── */
+.inm-v2-actions {
+    display: flex;
+    gap: 6px;
+    padding: 10px 12px;
+    border-top: 1px solid #e9ecef;
+    background: #f8f9fa;
+    border-radius: 0 0 12px 12px;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+/* ── Action group wrapper (icon + label below) ── */
+.inm-v2-act-grp {
+    display: contents; /* transparent on desktop; btn stays flex child */
+}
+
+/* ── Label below button (hidden on desktop) ── */
+.inm-v2-act-lbl {
+    display: none;
+    font-size: 9px;
+    font-weight: 700;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    text-align: center;
+    line-height: 1.1;
+    white-space: nowrap;
+}
+
+.inm-v2-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 700;
+    height: 36px;
+    padding: 0 10px;
+    text-decoration: none;
+    transition: filter 0.15s, transform 0.15s, box-shadow 0.15s;
+    white-space: nowrap;
+    flex-shrink: 0;
+    line-height: 1;
+}
+
+.inm-v2-btn:hover {
+    filter: brightness(1.1);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+}
+
+.inm-v2-btn:active {
+    transform: translateY(0);
+    filter: brightness(0.95);
+}
+
+/* Ver más — secondary */
+.inm-v2-btn--detail {
+    background: #1B3B6F;
+    color: #fff;
+    flex: 1;
+    min-width: 0;
+}
+
+/* Llamar — PRIMARY (wider, green) */
+.inm-v2-btn--call {
+    background: #16a34a;
+    color: #fff;
+    flex: 2;
+    font-size: 13px;
+    min-width: 0;
+}
+
+/* Icon-only buttons */
+.inm-v2-btn--list {
+    background: #0f766e;
+    color: #fff;
+    width: 36px;
+    padding: 0;
+    font-size: 17px;
+}
+
+.inm-v2-btn--map {
+    background: #e2e8f0;
+    color: #374151;
+    border: 1px solid #cbd5e1;
+    width: 36px;
+    padding: 0;
+    font-size: 17px;
+}
+
+/* ── Mobile overrides (≤ 480 px): revert to compact look ── */
+@media (max-width: 480px) {
+    /* Override popup width back to default for mobile */
+    .inm-v2-popup .leaflet-popup-content-wrapper,
+    .inm-v2-popup .leaflet-popup-content {
+        max-width: calc(92vw - 4px) !important;
+        width: auto !important;
+    }
+
+    /* Hide hero on mobile */
+    .inm-v2-hero { display: none !important; }
+
+    /* Show compact green header on mobile */
+    .inm-v2-mob-hdr { display: flex !important; }
+
+    /* Compact body */
+    .inm-v2-body {
+        max-height: calc(50vh - 110px) !important;
+        padding: 8px 10px 6px !important;
+    }
+
+    /* Action bar: 4 icon+label groups in a row */
+    .inm-v2-actions {
+        display: flex !important;
+        flex-wrap: nowrap !important;
+        gap: 4px !important;
+        padding: 10px 8px !important;
+        justify-content: center !important;
+        align-items: flex-start !important;
+    }
+
+    /* Each group: column flex, 25% width */
+    .inm-v2-act-grp {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        gap: 4px !important;
+        flex: 0 0 calc(25% - 4px) !important;
+        max-width: calc(25% - 4px) !important;
+    }
+
+    /* Buttons become square icons */
+    .inm-v2-act-grp .inm-v2-btn {
+        width: 44px !important;
+        height: 44px !important;
+        min-width: 44px !important;
+        max-width: 44px !important;
+        flex: none !important;
+        padding: 0 !important;
+        font-size: 20px !important;
+        border-radius: 12px !important;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.12) !important;
+    }
+
+    /* Show label below icon */
+    .inm-v2-act-lbl {
+        display: block !important;
+        font-size: 9px !important;
+        font-weight: 700 !important;
+        color: #6b7280 !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.3px !important;
+        text-align: center !important;
+        line-height: 1.1 !important;
+        white-space: nowrap !important;
+    }
+
+    /* Hide old inline btn text */
+    .inm-v2-btn-text {
+        display: none !important;
+    }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   BUSINESS POPUP V2 — Desktop professional redesign (≥ 481 px)
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* Wider popup on desktop */
+.biz-v2-popup .leaflet-popup-content-wrapper,
+.biz-v2-popup .leaflet-popup-content {
+    max-width: 340px !important;
+    width: 340px !important;
+}
+
+/* ── Address block ── */
+.biz-address-block {
+    margin-bottom: 12px;
+}
+
+.biz-address-label {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 10px;
+    font-weight: 700;
+    color: #4f46e5;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    margin-bottom: 3px;
+}
+
+.biz-address-val {
+    font-size: 15px;
+    font-weight: 600;
+    color: #1e293b;
+    line-height: 1.35;
+}
+
+/* ── Description — italic quote style ── */
+.biz-desc-quote {
+    color: #64748b !important;
+    font-style: italic !important;
+    font-size: 12px !important;
+    line-height: 1.65 !important;
+    padding-bottom: 12px !important;
+    margin: 0 0 12px !important;
+    border-bottom: 1px solid #e2e8f0;
+    position: relative;
+}
+
+/* ── Details info card (phone / hours / tags) ── */
+.biz-info-card {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    padding: 10px 12px;
+    margin-bottom: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.biz-info-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #475569;
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 1.4;
+}
+
+.biz-info-circle {
+    width: 28px;
+    height: 28px;
+    min-width: 28px;
+    border-radius: 50%;
+    background: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.10);
+    flex-shrink: 0;
+}
+
+.biz-tag-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    flex: 1;
+}
+
+.biz-tag-chip {
+    font-size: 9px;
+    font-weight: 800;
+    background: #e0e7ff;
+    color: #3730a3;
+    padding: 2px 7px;
+    border-radius: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    white-space: nowrap;
+}
+
+/* ── Rating row ── */
+.biz-rating-row {
+    text-align: center;
+    font-size: 11px;
+    color: #94a3b8;
+    font-weight: 600;
+    margin-bottom: 2px;
+}
+
+/* ── Header enhancements for biz-v2 ── */
+.biz-v2-popup .leaflet-popup .popup-header {
+    padding: 20px 18px 18px;
+}
+
+.biz-v2-popup .leaflet-popup .popup-header-icon {
+    width: 52px;
+    height: 52px;
+    border-radius: 14px;
+    font-size: 26px;
+    background: rgba(255,255,255,0.22);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+    transform: rotate(-3deg);
+}
+
+.biz-v2-popup .leaflet-popup .popup-header h3 {
+    font-size: 18px;
+    font-weight: 800;
+    letter-spacing: -0.4px;
+}
+
+.biz-v2-popup .leaflet-popup .status-badge {
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 10px 3px 8px;
+    border-radius: 20px;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    letter-spacing: 0.2px;
+    margin-top: 5px;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+}
+
+/* ── Popup body: a bit more padding for v2 ── */
+.biz-v2-popup .popup-body {
+    padding: 16px 18px !important;
+    max-height: 340px;
+}
+
+/* ── Wide action buttons on desktop: full-width row ── */
+.biz-v2-popup .popup-action-group--wide {
+    display: flex !important;
+    flex: 0 0 100% !important;
+    max-width: 100% !important;
+    margin-top: 2px;
+}
+
+.biz-v2-popup .popup-action-group--wide .popup-action,
+.biz-v2-popup .popup-action-group--wide .popup-action--text {
+    flex: 1 !important;
+    max-width: 100% !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    height: 44px !important;
+    min-height: 44px !important;
+    font-size: 14px !important;
+    font-weight: 800 !important;
+    border-radius: 12px !important;
+    letter-spacing: 0.02em;
+    gap: 8px;
+}
+
+/* ── Mobile resets for biz-v2 classes ── */
+@media (max-width: 480px) {
+    .biz-v2-popup .leaflet-popup-content-wrapper,
+    .biz-v2-popup .leaflet-popup-content {
+        max-width: calc(92vw - 4px) !important;
+        width: auto !important;
+    }
+
+    .biz-address-val { font-size: 13px; }
+
+    /* ── Revert header/body enhancements on mobile ── */
+    .biz-v2-popup .leaflet-popup .popup-header { padding: 10px 12px; }
+    .biz-v2-popup .leaflet-popup .popup-header-icon { width: 42px; height: 42px; font-size: 22px; transform: none; box-shadow: none; }
+    .biz-v2-popup .leaflet-popup .popup-header h3 { font-size: 16px; }
+    .biz-v2-popup .popup-body { padding: 8px 10px 6px !important; max-height: calc(50vh - 110px) !important; }
+
+    /* ── Revert new body elements to plain look (identical to old <p> style) ── */
+    .biz-address-block { margin-bottom: 6px; }
+    .biz-address-label { color: #667eea; font-size: 10px; letter-spacing: 0.5px; margin-bottom: 2px; }
+    .biz-address-val { font-size: 13px; font-weight: 400; color: #2c3e50; }
+
+    .biz-desc-quote { display: none !important; } /* same as .popup-desc on mobile */
+
+    .biz-info-card {
+        background: transparent !important;
+        border: none !important;
+        border-radius: 0 !important;
+        padding: 0 !important;
+        gap: 2px !important;
+        margin-bottom: 4px !important;
+    }
+    .biz-info-row {
+        gap: 4px !important;
+        font-size: 12px !important;
+        font-weight: 400 !important;
+        color: #2c3e50 !important;
+    }
+    /* Strip circle styling — emoji stays visible as plain inline icon */
+    .biz-info-circle {
+        width: auto !important;
+        height: auto !important;
+        min-width: 0 !important;
+        background: transparent !important;
+        box-shadow: none !important;
+        border-radius: 0 !important;
+        font-size: 12px !important;
+        display: inline-flex !important;
+    }
+
+    .biz-tag-chips { display: inline; }
+    .biz-tag-chip {
+        background: transparent !important;
+        color: #888 !important;
+        font-size: 11px !important;
+        padding: 0 !important;
+        border-radius: 0 !important;
+        text-transform: none !important;
+        letter-spacing: 0 !important;
+        font-weight: 400 !important;
+    }
+    .biz-tag-chip + .biz-tag-chip::before { content: ','; margin-right: 2px; }
+
+    .biz-rating-row { text-align: left; }
+
+    /* On mobile wide buttons revert to 50% (overrides the desktop 100% rule) */
+    .biz-v2-popup .popup-action-group--wide {
+        flex: 0 0 calc(50% - 3px) !important;
+        max-width: calc(50% - 3px) !important;
+        margin-top: 0 !important;
+    }
+
+    .biz-v2-popup .popup-action-group--wide .popup-action,
+    .biz-v2-popup .popup-action-group--wide .popup-action--text {
+        height: 36px !important;
+        min-height: 36px !important;
+        font-size: 12px !important;
+        font-weight: 700 !important;
+        border-radius: 8px !important;
+    }
+}
+
+/* ─── ANIMATIONS ──────────────────────────────────────────────────────── */
+@keyframes popupSlideUp {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.leaflet-popup {
+    animation: popupSlideUp 0.2s ease-out;
+}
+
+/* ─── BOTÓN CERRAR — X en círculo ────────────────────────────────────────── */
+.leaflet-popup-close-button {
+    width: 26px !important;
+    height: 26px !important;
+    border-radius: 50% !important;
+    background: rgba(100, 116, 139, 0.13) !important;
+    color: #64748b !important;
+    font-size: 15px !important;
+    font-weight: 700 !important;
+    line-height: 26px !important;
+    text-align: center !important;
+    top: 9px !important;
+    right: 9px !important;
+    padding: 0 !important;
+    border: none !important;
+    transition: background 0.15s, color 0.15s !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    text-decoration: none !important;
+}
+.leaflet-popup-close-button:hover {
+    background: rgba(100, 116, 139, 0.25) !important;
+    color: #1e293b !important;
+}
+
+/* ─── INMUEBLE POPUP PHOTO PLACEHOLDER ───────────────────────────────── */
+.popup-inm-placeholder {
+    width: 100%;
+    height: 100px;
+    background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
+    border-radius: 8px;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.5em;
+    color: #16a34a;
+    border: 1px dashed #86efac;
+}
+
+/* ─── POPUP FOOTER BUTTON VARIANTS ───────────────────────────────────── */
+.popup-action.popup-action--inm-call {
+    background: #2563eb;
+    color: #fff;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.popup-action.popup-action--inm-call:hover {
+    background: #1d4ed8;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+}
+
+.popup-action.popup-action--inm-call:focus-visible {
+    outline: 2px solid #2563eb;
+    outline-offset: 2px;
+}
+
+.popup-action.popup-action--inm-list {
+    background: #0f766e;
+    color: #fff;
+}
+
+.popup-action.popup-action--inm-list:hover {
+    background: #0d6460;
+    box-shadow: 0 4px 12px rgba(15, 118, 110, 0.3);
+}
+
+.popup-action.popup-action--inm-list:focus-visible {
+    outline: 2px solid #0f766e;
+    outline-offset: 2px;
+}
+
+.popup-action.popup-action--inm-map {
+    background: #e2e8f0;
+    color: #374151;
+    border: 1px solid #cbd5e1;
+}
+
+.popup-action.popup-action--inm-map:hover {
+    background: #cbd5e1;
+    box-shadow: 0 4px 12px rgba(100, 116, 139, 0.25);
+}
+
+.popup-action.popup-action--inm-map:focus-visible {
+    outline: 2px solid #64748b;
+    outline-offset: 2px;
+}
+
+/* ─── INMUEBLE DETAIL MODAL ───────────────────────────────────────────── */
+.inm-detail-dialog {
+    background: white;
+    border-radius: 16px;
+    width: 100%;
+    max-width: 540px;
+    max-height: 92vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+    margin: 10px;
+    display: flex;
+    flex-direction: column;
+}
+
+.inm-detail-header {
+    background: linear-gradient(135deg, #064e3b 0%, #065f46 60%, #16a34a 100%);
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border-radius: 16px 16px 0 0;
+    flex-shrink: 0;
+}
+
+.inm-detail-header__icon {
+    font-size: 1.8em;
+    flex-shrink: 0;
+    line-height: 1;
+}
+
+.inm-detail-header__text {
+    flex: 1;
+    min-width: 0;
+}
+
+.inm-detail-header__op {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.85);
+    font-weight: 600;
+    margin-bottom: 2px;
+}
+
+.inm-detail-header__title {
+    color: white;
+    font-size: 1em;
+    font-weight: 800;
+    margin: 0;
+    line-height: 1.3;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.inm-detail-close {
+    background: rgba(255, 255, 255, 0.15);
+    border: none;
+    color: white;
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    font-size: 1.1em;
+    cursor: pointer;
+    line-height: 1;
+    flex-shrink: 0;
+    transition: background 0.15s;
+    font-family: inherit;
+}
+
+.inm-detail-close:hover,
+.inm-detail-close:focus {
+    background: rgba(255, 255, 255, 0.3);
+    outline: 2px solid rgba(255, 255, 255, 0.6);
+    outline-offset: 1px;
+}
+
+.inm-detail-body {
+    padding: 18px 20px;
+    flex: 1;
+    overflow-y: auto;
+}
+
+.inm-detail-loading {
+    text-align: center;
+    color: #9ca3af;
+    padding: 40px 20px;
+    font-size: 14px;
+}
+
+/* Photo gallery */
+.inm-detail-gallery {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 14px;
+    flex-wrap: wrap;
+}
+
+.inm-detail-gallery__img {
+    width: 72px;
+    height: 72px;
+    object-fit: cover;
+    border-radius: 8px;
+    cursor: pointer;
+    border: 2px solid #e2e8f0;
+    transition: border-color 0.15s, transform 0.15s;
+    flex-shrink: 0;
+}
+
+.inm-detail-gallery__img--main {
+    width: 100%;
+    height: 200px;
+    border-radius: 10px;
+    border-color: #16a34a;
+    transform: none;
+    cursor: default;
+    order: -1;
+}
+
+.inm-detail-gallery__img:hover:not(.inm-detail-gallery__img--main) {
+    border-color: #16a34a;
+    transform: scale(1.04);
+}
+
+/* Placeholder when no images */
+.inm-detail-placeholder {
+    width: 100%;
+    height: 140px;
+    background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
+    border-radius: 10px;
+    margin-bottom: 14px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-size: 2.8em;
+    border: 1px dashed #86efac;
+}
+
+.inm-detail-placeholder span {
+    font-size: 12px;
+    color: #15803d;
+    font-weight: 600;
+}
+
+/* Characteristics grid */
+.inm-detail-chars {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    gap: 8px;
+    margin-bottom: 14px;
+}
+
+.inm-detail-chars__item {
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-radius: 10px;
+    padding: 8px 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.inm-detail-chars__icon {
+    font-size: 1.2em;
+    line-height: 1;
+}
+
+.inm-detail-chars__label {
+    font-size: 10px;
+    color: #6b7280;
+    text-transform: uppercase;
+    font-weight: 600;
+    letter-spacing: 0.4px;
+    line-height: 1;
+}
+
+.inm-detail-chars__val {
+    font-size: 13px;
+    font-weight: 700;
+    color: #166534;
+    line-height: 1.3;
+}
+
+/* Sections */
+.inm-detail-section {
+    margin-bottom: 12px;
+}
+
+.inm-detail-section__label {
+    display: block;
+    font-size: 11px;
+    font-weight: 700;
+    color: #16a34a;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+}
+
+.inm-detail-section__text {
+    font-size: 13px;
+    color: #374151;
+    line-height: 1.6;
+    margin: 0;
+    white-space: pre-line;
+}
+
+/* Inmobiliaria card inside detail */
+.inm-detail-biz {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 10px 12px;
+    margin-top: 10px;
+}
+
+.inm-detail-biz__logo {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    overflow: hidden;
+    flex-shrink: 0;
+    background: #e2e8f0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+}
+
+.inm-detail-biz__logo img {
+    width: 36px;
+    height: 36px;
+    object-fit: cover;
+    border-radius: 8px;
+    margin: 0;
+    border: none;
+    display: block;
+}
+
+.inm-detail-biz__info {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.inm-detail-biz__label {
+    font-size: 10px;
+    color: #6b7280;
+    text-transform: uppercase;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    line-height: 1;
+}
+
+.inm-detail-biz__name {
+    font-size: 14px;
+    font-weight: 700;
+    color: #1f2937;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.inm-detail-biz__badge {
+    font-size: 10px;
+    font-weight: 700;
+    color: #16a34a;
+    letter-spacing: 0.3px;
+    line-height: 1.2;
+}
+
+/* Detail footer */
+.inm-detail-footer {
+    padding: 14px 20px;
+    border-top: 1px solid #e5e7eb;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    background: #f8fafc;
+    border-radius: 0 0 16px 16px;
+    flex-shrink: 0;
+}
+
+.inm-detail-btn {
+    flex: 1;
+    min-width: 110px;
+    padding: 10px 14px;
+    border: none;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+    text-align: center;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s, box-shadow 0.15s;
+}
+
+.inm-detail-btn--call {
+    background: #2563eb;
+    color: white;
+}
+
+.inm-detail-btn--call:hover {
+    background: #1d4ed8;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+}
+
+.inm-detail-btn--map {
+    background: #16a34a;
+    color: white;
+}
+
+.inm-detail-btn--map:hover {
+    background: #15803d;
+    box-shadow: 0 4px 12px rgba(22, 163, 74, 0.3);
+}
+
+.inm-detail-btn--list {
+    background: #0f766e;
+    color: white;
+}
+
+.inm-detail-btn--list:hover {
+    background: #0d6460;
+    box-shadow: 0 4px 12px rgba(15, 118, 110, 0.3);
+}
+
+/* ─── RESPONSIVE DETAIL MODAL ─────────────────────────────────────────── */
+@media (max-width: 480px) {
+    .inm-detail-dialog {
+        max-height: 95vh;
+        border-radius: 12px;
+    }
+
+    .inm-detail-gallery__img--main {
+        height: 160px;
+    }
+
+    .inm-detail-chars {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .inm-detail-footer {
+        flex-direction: column;
+    }
+
+    .inm-detail-btn {
+        width: 100%;
+        min-width: auto;
+    }
+}

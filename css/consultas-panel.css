@@ -1,0 +1,694 @@
+/* ══════════════════════════════════════════════════════════════════
+   css/consultas-panel.css
+   Estilos para el módulo CONSULTAS MASIVAS:
+   - Botones de consulta en el sidebar
+   - Modal de envío de consulta
+   - Panel flotante minimizable de respuestas
+   ══════════════════════════════════════════════════════════════════ */
+
+/* ─── Botones en sidebar ──────────────────────────────────────── */
+.cq-btn {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    width: 100%;
+    padding: 9px 12px;
+    border: none;
+    border-radius: 8px;
+    background: #1565c0;
+    color: #fff;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 700;
+    margin-bottom: 5px;
+    transition: background 0.18s, box-shadow 0.18s;
+    text-align: left;
+}
+.cq-btn:hover { background: #1976d2; box-shadow: 0 2px 8px rgba(21,101,192,.35); }
+.cq-btn.cq-btn--general  { background: #6a1e99; }
+.cq-btn.cq-btn--general:hover  { background: #7b21b5; }
+.cq-btn.cq-btn--proveedor { background: #e65100; }
+.cq-btn.cq-btn--proveedor:hover { background: #f4511e; }
+.cq-btn.cq-btn--envio     { background: #00695c; }
+.cq-btn.cq-btn--envio:hover     { background: #00796b; }
+.cq-btn:disabled { opacity: .5; cursor: not-allowed; }
+
+.cq-section-label {
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: .08em;
+    color: #546e7a;
+    text-transform: uppercase;
+    margin: 10px 0 5px;
+    padding: 0 2px;
+}
+
+/* ─── Secciones fijas del sidebar (Consultas / Inmobiliarias / Arte) ───────── */
+/* Las secciones siempre están visibles; el acordeón colapsable fue removido.  */
+.cq-acc-hdr {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    padding: 6px 4px 4px;
+    border: none;
+    background: none;
+    cursor: default;
+    pointer-events: none;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: .08em;
+    color: #546e7a;
+    text-transform: uppercase;
+    margin: 10px 0 0;
+    text-align: left;
+    line-height: 1.2;
+}
+
+/* Chevron oculto — las secciones no son colapsables */
+.cq-acc-chevron {
+    display: none;
+}
+
+/* Cuerpo de sección — siempre visible */
+.cq-acc-body {
+    display: block;
+}
+/* Clase .open mantenida por compatibilidad pero no altera la visibilidad */
+.cq-acc-body.open {
+    display: block;
+}
+.cq-acc-body-inner {
+    padding: 6px 0 2px;
+}
+
+/* ─── Modal Convocar — estilos mejorados (arte/teatro) ────────────────────── */
+/* Mejora: paleta arte/teatro, íconos SVG, mejor contraste de botones         */
+.conv-modal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    background: rgba(18, 8, 35, 0.72);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(2px);
+}
+.conv-modal {
+    background: #fff8f2;
+    border-radius: 16px;
+    max-width: 500px;
+    width: 94%;
+    max-height: 92vh;
+    overflow-y: auto;
+    box-shadow: 0 12px 48px rgba(45, 27, 78, 0.38);
+    font-family: inherit;
+}
+/* Header with theater/art gradient */
+.conv-modal-header {
+    background: linear-gradient(135deg, #2d1b4e 0%, #5b2d8e 60%, #8b4ec0 100%);
+    color: #fff;
+    padding: 20px 22px 16px;
+    border-radius: 16px 16px 0 0;
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    position: relative;
+}
+.conv-modal-header-icon {
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding-top: 2px;
+}
+.conv-modal-header-text { flex: 1; min-width: 0; }
+.conv-modal-header h3 {
+    margin: 0 0 5px;
+    font-size: 1.05em;
+    font-weight: 800;
+    letter-spacing: .03em;
+    color: #fff;
+    line-height: 1.2;
+}
+.conv-modal-subtitle {
+    font-size: .80em;
+    color: rgba(255,255,255,.82);
+    margin: 0;
+    line-height: 1.45;
+}
+.conv-modal-close {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    background: rgba(255,255,255,.15);
+    border: 1.5px solid rgba(255,255,255,.28);
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1em;
+    cursor: pointer;
+    color: #fff;
+    transition: background 0.15s;
+    line-height: 1;
+}
+.conv-modal-close:hover { background: rgba(255,255,255,.30); }
+/* Gold accent bar */
+.conv-modal-accent-bar {
+    height: 3px;
+    background: linear-gradient(90deg, #d4af37 0%, #f0d060 50%, #d4af37 100%);
+}
+/* Modal body */
+.conv-modal-body {
+    padding: 20px 22px;
+}
+.conv-field {
+    margin-bottom: 16px;
+}
+.conv-field label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: .82em;
+    font-weight: 700;
+    color: #3b1f5e;
+    margin-bottom: 6px;
+}
+.conv-field select,
+.conv-field input[type="date"] {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1.5px solid #c8b4e8;
+    border-radius: 8px;
+    font-size: .88em;
+    font-family: inherit;
+    background: #fff;
+    color: #1f2937;
+    box-sizing: border-box;
+    transition: border-color .15s, box-shadow .15s;
+}
+.conv-field select:focus,
+.conv-field input[type="date"]:focus {
+    outline: none;
+    border-color: #7c3aed;
+    box-shadow: 0 0 0 3px rgba(124,58,237,.14);
+}
+.conv-dates-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+.conv-notice {
+    font-size: .78em;
+    color: #7c3aed;
+    background: #f0ebff;
+    border-radius: 7px;
+    padding: 8px 12px;
+    margin-bottom: 16px;
+    border-left: 3px solid #7c3aed;
+    line-height: 1.4;
+}
+.conv-notice strong { color: #5b1fa2; }
+/* Message feedback area */
+#conv-msg {
+    font-size: .82em;
+    margin-bottom: 12px;
+    padding: 9px 13px;
+    border-radius: 7px;
+    display: none;
+}
+#conv-msg.conv-msg--ok  { background: #ecfdf5; color: #065f46; border-left: 3px solid #10b981; }
+#conv-msg.conv-msg--err { background: #fef2f2; color: #991b1b; border-left: 3px solid #ef4444; }
+/* Footer actions */
+.conv-modal-footer {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    padding: 0 22px 22px;
+}
+.conv-btn-cancel {
+    padding: 10px 18px;
+    border: 1.5px solid #c4b5d6;
+    border-radius: 8px;
+    background: #fff;
+    color: #5b2d8e;
+    font-size: .88em;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+}
+.conv-btn-cancel:hover { background: #f5f0fc; border-color: #7c3aed; }
+.conv-btn-send {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    background: linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%);
+    color: #fff;
+    font-size: .88em;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    box-shadow: 0 2px 8px rgba(91,33,182,.30);
+    transition: background 0.15s, box-shadow 0.15s, transform 0.10s;
+}
+.conv-btn-send:hover:not(:disabled) {
+    background: linear-gradient(135deg, #6d28d9 0%, #4c1d95 100%);
+    box-shadow: 0 4px 14px rgba(91,33,182,.40);
+    transform: translateY(-1px);
+}
+.conv-btn-send:disabled {
+    background: linear-gradient(135deg, #a78de0 0%, #7c5cb0 100%);
+    color: #f0e8ff;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+/* ─── Stats bar — resultado de búsqueda mejorado ──────────────────────────── */
+/* Mejora: espaciado y separación visual de datos en la barra de resultados   */
+.stats-total {
+    font-weight: 700;
+    color: #667eea;
+}
+.stats-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    background: #e8eaf6;
+    color: #3949ab;
+    border-radius: 999px;
+    padding: 1px 8px;
+    font-size: .9em;
+    font-weight: 700;
+    margin-left: 4px;
+    white-space: nowrap;
+}
+.stats-sep {
+    color: #c8ccd8;
+    margin: 0 4px;
+    font-weight: 400;
+}
+
+/* ─── Geo-selection overlay ───────────────────────────────────── */
+#cq-geo-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(21,101,192,.14);
+    z-index: 2100;
+    pointer-events: none;
+}
+#cq-geo-overlay.active { display: block; }
+#cq-geo-toast {
+    display: none;
+    position: fixed;
+    top: 70px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(21,101,192,.93);
+    color: #fff;
+    padding: 11px 20px;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 700;
+    z-index: 2200;
+    box-shadow: 0 4px 18px rgba(0,0,0,.25);
+    pointer-events: none;
+    white-space: nowrap;
+}
+#cq-geo-toast.active { display: block; }
+
+/* ─── Modal de envío ──────────────────────────────────────────── */
+#cq-modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.55);
+    z-index: 3000;
+    align-items: center;
+    justify-content: center;
+}
+#cq-modal-overlay.active {
+    display: flex;
+}
+#cq-modal {
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 8px 40px rgba(0,0,0,.28);
+    width: min(480px, 96vw);
+    max-height: 92vh;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+}
+#cq-modal-header {
+    background: linear-gradient(135deg, #1565c0 0%, #0d3b8c 100%);
+    color: #fff;
+    padding: 18px 20px 14px;
+    border-radius: 16px 16px 0 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+#cq-modal-header h2 {
+    margin: 0;
+    font-size: 15px;
+    font-weight: 700;
+    flex: 1;
+}
+#cq-modal-close {
+    background: none;
+    border: none;
+    color: rgba(255,255,255,.8);
+    font-size: 20px;
+    cursor: pointer;
+    line-height: 1;
+    padding: 0 4px;
+    transition: color .15s;
+}
+#cq-modal-close:hover { color: #fff; }
+#cq-modal-body {
+    padding: 18px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+#cq-modal-body label {
+    font-size: 12px;
+    font-weight: 700;
+    color: #374151;
+    margin-bottom: 4px;
+    display: block;
+}
+#cq-modal-body select,
+#cq-modal-body textarea {
+    width: 100%;
+    padding: 9px 11px;
+    border: 1.5px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 13px;
+    font-family: inherit;
+    box-sizing: border-box;
+    resize: vertical;
+    color: #1f2937;
+    transition: border-color .15s;
+}
+#cq-modal-body select:focus,
+#cq-modal-body textarea:focus { outline: none; border-color: #1565c0; }
+#cq-modal-preview {
+    font-size: 12px;
+    color: #6b7280;
+    background: #f3f4f6;
+    border-radius: 8px;
+    padding: 8px 12px;
+}
+#cq-modal-preview strong { color: #1565c0; }
+#cq-modal-footer {
+    padding: 12px 20px 18px;
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+}
+.cq-modal-cancel {
+    padding: 9px 18px;
+    border: 1.5px solid #d1d5db;
+    border-radius: 8px;
+    background: #fff;
+    color: #374151;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background .15s;
+}
+.cq-modal-cancel:hover { background: #f9fafb; }
+.cq-modal-submit {
+    padding: 9px 20px;
+    border: none;
+    border-radius: 8px;
+    background: #1565c0;
+    color: #fff;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background .15s;
+}
+.cq-modal-submit:hover:not(:disabled) { background: #1976d2; }
+.cq-modal-submit:disabled { opacity: .55; cursor: not-allowed; }
+#cq-modal-error {
+    color: #c0392b;
+    font-size: 12px;
+    text-align: center;
+    min-height: 16px;
+}
+.cq-char-count {
+    font-size: 11px;
+    color: #9ca3af;
+    text-align: right;
+    margin-top: 2px;
+}
+
+/* ─── Panel flotante de consultas ─────────────────────────────── */
+#cq-panel {
+    position: fixed;
+    bottom: 80px;
+    right: 18px;
+    width: min(380px, 96vw);
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 8px 40px rgba(0,0,0,.22);
+    z-index: 2500;
+    display: flex;
+    flex-direction: column;
+    max-height: 70vh;
+    transition: transform .25s cubic-bezier(.4,0,.2,1), opacity .2s;
+}
+#cq-panel.cq-minimized {
+    transform: translateY(calc(100% + 80px));
+    opacity: 0;
+    pointer-events: none;
+}
+#cq-panel-toggle-btn {
+    position: fixed;
+    bottom: 80px;
+    right: 18px;
+    z-index: 2600;
+    background: #1565c0;
+    color: #fff;
+    border: none;
+    border-radius: 50px;
+    padding: 10px 16px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 4px 16px rgba(21,101,192,.38);
+    display: none;
+    align-items: center;
+    gap: 6px;
+    transition: background .15s, box-shadow .15s;
+}
+#cq-panel-toggle-btn.visible { display: flex; }
+#cq-panel-toggle-btn:hover { background: #1976d2; }
+#cq-panel-badge {
+    background: #e53935;
+    color: #fff;
+    border-radius: 50px;
+    padding: 1px 7px;
+    font-size: 11px;
+    font-weight: 800;
+    min-width: 20px;
+    text-align: center;
+}
+#cq-panel-header {
+    background: linear-gradient(135deg, #1565c0 0%, #0d3b8c 100%);
+    color: #fff;
+    padding: 13px 16px;
+    border-radius: 16px 16px 0 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+#cq-panel-title {
+    flex: 1;
+    font-size: 14px;
+    font-weight: 700;
+}
+.cq-panel-hdr-btn {
+    background: none;
+    border: none;
+    color: rgba(255,255,255,.8);
+    font-size: 17px;
+    cursor: pointer;
+    padding: 0 3px;
+    line-height: 1;
+    transition: color .15s;
+}
+.cq-panel-hdr-btn:hover { color: #fff; }
+#cq-panel-tabs {
+    display: flex;
+    border-bottom: 1.5px solid #e5e7eb;
+}
+.cq-tab {
+    flex: 1;
+    padding: 10px;
+    font-size: 12px;
+    font-weight: 700;
+    color: #6b7280;
+    background: none;
+    border: none;
+    cursor: pointer;
+    transition: color .15s, border-bottom .15s;
+    border-bottom: 2.5px solid transparent;
+}
+.cq-tab.active { color: #1565c0; border-bottom-color: #1565c0; }
+#cq-panel-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 10px 12px;
+}
+#cq-panel-body::-webkit-scrollbar { width: 5px; }
+#cq-panel-body::-webkit-scrollbar-track { background: #f1f1f1; }
+#cq-panel-body::-webkit-scrollbar-thumb { background: #c1c1c1; border-radius: 3px; }
+
+/* ─── Ítem de consulta en el panel ───────────────────────────── */
+.cq-item {
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    margin-bottom: 8px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: box-shadow .15s;
+}
+.cq-item:hover { box-shadow: 0 2px 10px rgba(0,0,0,.1); }
+.cq-item-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 11px;
+    background: #f8fafc;
+}
+.cq-item-tipo {
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    padding: 2px 7px;
+    border-radius: 50px;
+    background: #1565c0;
+    color: #fff;
+}
+.cq-item-tipo.tipo-general  { background: #6a1e99; }
+.cq-item-tipo.tipo-global_proveedor { background: #e65100; }
+.cq-item-tipo.tipo-envio    { background: #00695c; }
+.cq-item-date {
+    font-size: 11px;
+    color: #9ca3af;
+    margin-left: auto;
+}
+.cq-item-texto {
+    padding: 7px 11px 5px;
+    font-size: 12px;
+    color: #374151;
+    font-style: italic;
+}
+.cq-item-stats {
+    padding: 5px 11px 9px;
+    font-size: 11px;
+    color: #6b7280;
+    display: flex;
+    gap: 10px;
+}
+.cq-item-stats span { display: flex; align-items: center; gap: 3px; }
+
+/* ─── Detalle del hilo de una consulta ───────────────────────── */
+#cq-thread-view {
+    display: none;
+}
+#cq-thread-view.active { display: block; }
+.cq-back-btn {
+    background: none;
+    border: none;
+    color: #1565c0;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    padding: 6px 0;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin-bottom: 8px;
+}
+.cq-thread-consulta {
+    background: #eff6ff;
+    border-radius: 8px;
+    padding: 10px 12px;
+    margin-bottom: 10px;
+    font-size: 12.5px;
+    color: #1e3a5f;
+}
+.cq-thread-consulta strong { display: block; font-size: 11px; color: #3b82f6; margin-bottom: 4px; }
+.cq-resp-item {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 8px;
+    padding: 8px 10px;
+    background: #f9fafb;
+    border-radius: 8px;
+    border-left: 3px solid #1565c0;
+}
+.cq-resp-biz {
+    font-size: 11px;
+    font-weight: 700;
+    color: #1565c0;
+    white-space: nowrap;
+}
+.cq-resp-text {
+    font-size: 12px;
+    color: #374151;
+    flex: 1;
+}
+.cq-resp-date {
+    font-size: 10px;
+    color: #9ca3af;
+    align-self: flex-end;
+}
+.cq-reply-form {
+    margin-top: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+.cq-reply-form textarea {
+    border: 1.5px solid #d1d5db;
+    border-radius: 8px;
+    padding: 8px 10px;
+    font-size: 12px;
+    font-family: inherit;
+    resize: none;
+    height: 60px;
+    transition: border-color .15s;
+}
+.cq-reply-form textarea:focus { outline: none; border-color: #1565c0; }
+.cq-reply-send {
+    align-self: flex-end;
+    padding: 7px 14px;
+    border: none;
+    border-radius: 7px;
+    background: #1565c0;
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background .15s;
+}
+.cq-reply-send:hover { background: #1976d2; }
+.cq-empty {
+    text-align: center;
+    padding: 24px 10px;
+    color: #9ca3af;
+    font-size: 13px;
+}
