@@ -6760,6 +6760,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (rm.success && rm.data && rm.data.length > 0) {
             mostrarMarcadoresMultitudes(rm.data);
             renderMultitudesWidget(rm.data);
+            // Auto-open MULTITUDES panel when arriving via a deep-link (?multitudes=1)
+            if (new URLSearchParams(window.location.search).get('multitudes') === '1' && rm.data.length > 0) {
+                abrirMultitudModal(rm.data[0]);
+            }
         }
     } catch (e) { console.error('Error cargando multitudes', e); }
 
@@ -8756,6 +8760,7 @@ async function abrirMultitudModal(m) {
         panel.innerHTML = `
             <div id="mt-float-panel-header">
                 <span id="mt-float-panel-title"></span>
+                <button class="mt-panel-btn" id="mt-panel-share-btn" aria-label="Compartir MULTITUDES" title="Compartir">📤</button>
                 <button class="mt-panel-btn" id="mt-panel-min-btn" aria-label="Minimizar" title="Minimizar">&#8212;</button>
                 <button class="mt-panel-btn" id="mt-panel-close-btn" aria-label="Cerrar" title="Cerrar">&#x2715;</button>
             </div>
@@ -8783,6 +8788,13 @@ async function abrirMultitudModal(m) {
         panel.querySelector('#mt-panel-close-btn').addEventListener('click', function () {
             panel.style.display = 'none';
             panel.querySelector('#mt-items-list').innerHTML = '';
+        });
+
+        // Share – generates a deep-link to this page with ?multitudes=1
+        panel.querySelector('#mt-panel-share-btn').addEventListener('click', function (e) {
+            e.stopPropagation();
+            const nombre = (panel.querySelector('#mt-float-panel-title').textContent || '').replace(/^👥\s*/, '').trim();
+            compartirMultitudes(nombre);
         });
 
         // Drag
@@ -9203,6 +9215,51 @@ function _initMtPanelDrag(panel, handle) {
         document.addEventListener('mousemove', onMove);
         document.addEventListener('mouseup',   onUp);
     });
+}
+
+/** Share a deep-link that opens MAPITA and auto-opens the MULTITUDES panel (Option A: no specific item) */
+function compartirMultitudes(nombre) {
+    // Build a clean deep-link: current page + ?multitudes=1
+    var url   = window.location.origin + window.location.pathname + '?multitudes=1';
+    var texto = (nombre ? '👥 ' + nombre : '👥 MULTITUDES') + ' — MAPITA';
+
+    // Use native Web Share API on mobile when available
+    if (navigator.share) {
+        navigator.share({ title: texto, url: url }).catch(function(err){ console.warn('Web Share API error:', err); });
+        return;
+    }
+
+    // Fallback: reuse the share overlay pattern used by compartirContenido()
+    var prevShare = document.getElementById('share-modal-overlay');
+    if (prevShare) prevShare.remove();
+
+    var overlay = document.createElement('div');
+    overlay.id  = 'share-modal-overlay';
+    overlay.style.cssText = 'position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.65);display:flex;align-items:center;justify-content:center;padding:16px;box-sizing:border-box;';
+
+    var waUrl = 'https://api.whatsapp.com/send?text=' + encodeURIComponent(texto + '\n' + url);
+    var tgUrl = 'https://t.me/share/url?url=' + encodeURIComponent(url) + '&text=' + encodeURIComponent(texto);
+    var twUrl = 'https://twitter.com/intent/tweet?url=' + encodeURIComponent(url) + '&text=' + encodeURIComponent(texto);
+    var fbUrl = 'https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(url);
+
+    overlay.innerHTML = '<div style="background:#fff;border-radius:16px;padding:28px 24px 22px;max-width:380px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,0.3);text-align:center;">'
+        + '<h3 style="margin:0 0 6px;color:#4f46e5;font-size:17px;">📤 Compartir MULTITUDES</h3>'
+        + '<p style="color:#666;font-size:12px;margin:0 0 20px;line-height:1.4;">' + (nombre ? escapeHtml(nombre) : '') + '</p>'
+        + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;">'
+        + '<a href="' + waUrl + '" target="_blank" rel="noopener" style="display:flex;align-items:center;justify-content:center;gap:8px;padding:12px;background:#25D366;color:white;border-radius:10px;text-decoration:none;font-weight:700;font-size:14px;">📱 WhatsApp</a>'
+        + '<a href="' + tgUrl + '" target="_blank" rel="noopener" style="display:flex;align-items:center;justify-content:center;gap:8px;padding:12px;background:#0088cc;color:white;border-radius:10px;text-decoration:none;font-weight:700;font-size:14px;">✈️ Telegram</a>'
+        + '<a href="' + twUrl + '" target="_blank" rel="noopener" style="display:flex;align-items:center;justify-content:center;gap:8px;padding:12px;background:#000;color:white;border-radius:10px;text-decoration:none;font-weight:700;font-size:14px;">𝕏 Twitter/X</a>'
+        + '<a href="' + fbUrl + '" target="_blank" rel="noopener" style="display:flex;align-items:center;justify-content:center;gap:8px;padding:12px;background:#1877f2;color:white;border-radius:10px;text-decoration:none;font-weight:700;font-size:14px;">📘 Facebook</a>'
+        + '</div>'
+        + '<div style="display:flex;gap:8px;align-items:center;background:#f3f4f6;border-radius:8px;padding:10px 12px;margin-bottom:14px;">'
+        + '<input id="share-link-input" type="text" value="' + url + '" readonly style="flex:1;border:none;background:none;font-size:11px;color:#374151;outline:none;">'
+        + '<button onclick="var i=document.getElementById(\'share-link-input\');i.select();document.execCommand(\'copy\');this.textContent=\'✓ Copiado\';setTimeout(()=>this.textContent=\'Copiar\',2000)" style="border:none;background:#4f46e5;color:#fff;border-radius:6px;padding:5px 10px;cursor:pointer;font-size:11px;font-weight:700;white-space:nowrap;">Copiar</button>'
+        + '</div>'
+        + '<button onclick="document.getElementById(\'share-modal-overlay\').remove()" style="width:100%;padding:10px;background:#f0f0f0;border:none;border-radius:8px;cursor:pointer;font-weight:600;font-size:13px;">Cerrar</button>'
+        + '</div>';
+
+    overlay.onclick = function(e){ if(e.target===overlay) overlay.remove(); };
+    document.body.appendChild(overlay);
 }
 
 /** Render map markers for all multitudes */
