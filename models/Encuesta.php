@@ -482,7 +482,7 @@ class Encuesta {
 
             $upload_dir = __DIR__ . '/../uploads/encuestas';
             if (!is_dir($upload_dir)) {
-                mkdir($upload_dir, 0755, true);
+                mkdir($upload_dir, 0750, true);
             }
 
             $ext      = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
