@@ -21,6 +21,17 @@ function respond_error($message, $code = 400) {
     echo json_encode(['success' => false, 'error' => $message]);
     exit;
 }
+function upload_error_message($code) {
+    $messages = [
+        UPLOAD_ERR_INI_SIZE   => "El archivo supera el tamaño máximo permitido por el servidor.",
+        UPLOAD_ERR_FORM_SIZE  => "El archivo supera el tamaño máximo indicado en el formulario.",
+        UPLOAD_ERR_PARTIAL    => "El archivo se subió de forma incompleta.",
+        UPLOAD_ERR_NO_TMP_DIR => "No se encontró el directorio temporal del servidor.",
+        UPLOAD_ERR_CANT_WRITE => "No se pudo guardar el archivo en el servidor.",
+        UPLOAD_ERR_EXTENSION  => "Una extensión del servidor detuvo la subida del archivo.",
+    ];
+    return $messages[$code] ?? "Error desconocido al subir el archivo.";
+}
 const MAX_AGGREGATE_IDS = 100;
 function parse_aggregate_ids($idsRaw) {
     $ids = array_values(array_unique(array_filter(array_map('intval', explode(',', (string)$idsRaw)), function($v) {
@@ -33,6 +44,9 @@ function parse_aggregate_ids($idsRaw) {
 require_once __DIR__ . '/../core/Database.php';
 require_once __DIR__ . '/../core/helpers.php';
 require_once __DIR__ . '/encuestas_render_helper.php';
+require_once __DIR__ . '/../models/Encuesta.php';
+
+use App\Models\Encuesta;
 
 $encuestasDefault = [
     [
@@ -401,7 +415,11 @@ if ($method === 'POST') {
     } else {
         $input = $_POST;
     }
-    if (!$input) respond_error("Datos inválidos", 400);
+    // For JSON: reject on parse errors. For multipart: $_POST is always an array;
+    // reject only when both the POST body and any file upload are completely absent.
+    if ($input === null || $input === false) respond_error("Datos inválidos", 400);
+    if (!is_array($input)) $input = [];
+    if (empty($input) && empty($_FILES)) respond_error("Datos inválidos", 400);
 
     try {
         // ─── CREATE ─────────────────────────────────────
@@ -417,14 +435,26 @@ if ($method === 'POST') {
 
             if (!$titulo) respond_error("El título es requerido", 400);
 
+            // ── Subida de imagen ─────────────────────────
+            $imagen = null;
+            if (!empty($_FILES['imagen']) && $_FILES['imagen']['error'] !== UPLOAD_ERR_NO_FILE) {
+                if ($_FILES['imagen']['error'] !== UPLOAD_ERR_OK) {
+                    respond_error(upload_error_message($_FILES['imagen']['error']), 400);
+                }
+                $imagen = Encuesta::uploadImage($_FILES['imagen']);
+                if ($imagen === false) {
+                    respond_error("No se pudo subir la imagen. Verifica que el formato sea permitido (JPG, PNG, WEBP, GIF) y que pese menos de 5 MB.", 400);
+                }
+            }
+
             $stmt = $db->prepare("
                 INSERT INTO encuestas
-                    (titulo, descripcion, lat, lng, link, fecha_creacion, fecha_expiracion, activo, created_at)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())
+                    (titulo, descripcion, lat, lng, link, fecha_creacion, fecha_expiracion, activo, imagen, created_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
             ");
             $result = $stmt->execute([
                 $titulo, $descripcion, $lat, $lng,
-                $link, $fecha_creacion, $fecha_expiracion ?: null, $activo
+                $link, $fecha_creacion, $fecha_expiracion ?: null, $activo, $imagen
             ]);
 
             if ($result) {
@@ -455,6 +485,20 @@ if ($method === 'POST') {
                 $updates[] = "activo = ?";
                 $values[]  = (int)(bool)$input['activo'];
             }
+
+            // ── Subida de imagen ─────────────────────────
+            if (!empty($_FILES['imagen']) && $_FILES['imagen']['error'] !== UPLOAD_ERR_NO_FILE) {
+                if ($_FILES['imagen']['error'] !== UPLOAD_ERR_OK) {
+                    respond_error(upload_error_message($_FILES['imagen']['error']), 400);
+                }
+                $imagen = Encuesta::uploadImage($_FILES['imagen']);
+                if ($imagen === false) {
+                    respond_error("No se pudo subir la imagen. Verifica que el formato sea permitido (JPG, PNG, WEBP, GIF) y que pese menos de 5 MB.", 400);
+                }
+                $updates[] = "imagen = ?";
+                $values[]  = $imagen;
+            }
+
             if (empty($updates)) respond_error("No hay datos para actualizar", 400);
 
             $updates[] = "updated_at = NOW()";
