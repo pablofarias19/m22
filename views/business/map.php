@@ -1200,67 +1200,94 @@ try {
         /* Empty state */
         .mt-empty { padding: 20px; text-align: center; color: #9ca3af; font-size: 13px; }
 
-        /* ── YouTube Video Modal ── */
-        #yt-video-modal {
-            display: none;
+        /* ── YouTube Floating Video Panel ── */
+        /* Panel is fixed-size floating window; map behind it stays fully interactive */
+        #yt-float-panel {
             position: fixed;
-            z-index: 10200;
-            left: 0; top: 0;
-            width: 100%; height: 100%;
-            background-color: rgba(0,0,0,0.88);
-            align-items: center;
-            justify-content: center;
+            bottom: 20px;
+            right: 20px;
+            z-index: 10500;
+            width: 420px;
+            height: 276px; /* 40px header + 236px body (16:9 of 420px) */
+            min-width: 280px;
+            min-height: 40px;
+            background: #111;
+            border-radius: 10px;
+            box-shadow: 0 8px 40px rgba(0,0,0,0.65);
+            display: none;
             flex-direction: column;
+            overflow: hidden;
+            font-family: inherit;
         }
-        #yt-video-modal-inner {
-            position: relative;
-            width: 90%;
-            max-width: 854px;
-        }
-        #yt-video-title-bar {
+        /* Minimized: only show header */
+        #yt-float-panel.is-minimized { height: auto; }
+        #yt-float-panel.is-minimized #yt-float-body { display: none; }
+        /* Drag handle / header */
+        #yt-float-header {
+            background: linear-gradient(135deg, #1e1b4b, #312e81);
             color: #fff;
-            font-size: 14px;
+            padding: 7px 10px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            cursor: move;
+            user-select: none;
+            flex-shrink: 0;
+            min-height: 40px;
+        }
+        #yt-float-title {
+            flex: 1;
+            font-size: 12px;
             font-weight: 700;
-            margin-bottom: 10px;
-            text-align: center;
-            padding: 0 40px;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
+            min-width: 0;
         }
-        #yt-video-container {
-            position: relative;
-            padding-top: 56.25%; /* 16:9 */
-            background: #000;
-            border-radius: 10px;
-            overflow: hidden;
-            box-shadow: 0 8px 40px rgba(0,0,0,0.6);
-        }
-        #yt-video-iframe {
-            position: absolute;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
+        .yt-float-btn {
+            background: rgba(255,255,255,0.18);
             border: none;
-        }
-        #yt-video-close-btn {
-            position: absolute;
-            top: -42px; right: 0;
-            background: rgba(255,255,255,0.9);
-            color: #333;
-            border: none;
-            width: 35px; height: 35px;
-            border-radius: 50%;
-            font-size: 18px;
+            color: #fff;
             cursor: pointer;
-            transition: background .15s;
+            border-radius: 4px;
+            width: 26px;
+            height: 26px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+            flex-shrink: 0;
+            transition: background 0.15s;
             line-height: 1;
         }
-        #yt-video-close-btn:hover { background: #fff; }
-        #yt-video-hint {
-            color: #999;
-            margin-top: 14px;
-            font-size: 12px;
-            text-align: center;
+        .yt-float-btn:hover        { background: rgba(255,255,255,0.32); }
+        .yt-float-btn:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+        /* Video body: fills remaining height */
+        #yt-float-body {
+            flex: 1;
+            background: #000;
+            overflow: hidden;
+            position: relative;
+            min-height: 0;
+        }
+        #yt-video-iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            display: block;
+        }
+        /* Bottom-right corner drag-to-resize handle */
+        #yt-float-resize {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 20px;
+            height: 20px;
+            cursor: nwse-resize;
+            z-index: 1;
+            /* visual triangle indicator */
+            background: linear-gradient(135deg, transparent 50%, rgba(255,255,255,0.28) 50%);
+            border-radius: 0 0 10px 0;
         }
         /* Sidebar pill */
         .mt-sidebar-item {
@@ -6808,9 +6835,9 @@ function updateGalleryNav() {
 
 // Keyboard navigation
 document.addEventListener('keydown', (e) => {
-    // YouTube modal has highest priority
-    const ytModal = document.getElementById('yt-video-modal');
-    if (ytModal && ytModal.style.display === 'flex') {
+    // YouTube floating panel: Esc closes it
+    const ytPanel = document.getElementById('yt-float-panel');
+    if (ytPanel && ytPanel.style.display === 'flex') {
         if (e.key === 'Escape') { e.preventDefault(); closeYouTubeModal(); }
         return;
     }
@@ -8839,26 +8866,137 @@ function _extractYTVideoId(url) {
     return null;
 }
 
-/** Open YouTube video overlay on the map */
+/** Open YouTube floating video panel (replaces full-screen modal) */
 function openYouTubeModal(videoId, titulo) {
-    const modal  = document.getElementById('yt-video-modal');
-    const iframe = document.getElementById('yt-video-iframe');
-    const titleEl = document.getElementById('yt-video-title-bar');
-    if (!modal || !iframe) return;
+    const panel   = document.getElementById('yt-float-panel');
+    const iframe  = document.getElementById('yt-video-iframe');
+    const titleEl = document.getElementById('yt-float-title');
+    if (!panel || !iframe) return;
     if (!/^[a-zA-Z0-9_-]{11}$/.test(videoId)) return;
-    if (titleEl) titleEl.textContent = titulo || '';
+    if (titleEl) titleEl.textContent = titulo || '▶ Video';
     iframe.src = 'https://www.youtube.com/embed/' + encodeURIComponent(videoId) + '?autoplay=1&rel=0';
-    modal.style.display = 'flex';
+    // Restore from minimized
+    panel.classList.remove('is-minimized');
+    const minBtn = document.getElementById('yt-float-min-btn');
+    if (minBtn) { minBtn.textContent = '—'; minBtn.setAttribute('aria-label', 'Minimizar video'); }
+    // First open: convert CSS right/bottom anchor to explicit left/top so drag/resize work
+    if (!panel.dataset.positioned) {
+        const w = 420, h = 276;
+        panel.style.left   = Math.max(0, window.innerWidth  - w - 20) + 'px';
+        panel.style.top    = Math.max(0, window.innerHeight - h - 20) + 'px';
+        panel.style.width  = w + 'px';
+        panel.style.height = h + 'px';
+        panel.style.right  = '';
+        panel.style.bottom = '';
+        panel.dataset.positioned = '1';
+    }
+    panel.style.display = 'flex';
+    // Focus close button for keyboard users (delay lets display:flex render first)
+    setTimeout(function () {
+        var btn = document.getElementById('yt-float-close-btn');
+        if (btn) btn.focus();
+    }, 60);
 }
 
-/** Close YouTube video overlay and stop playback */
+/** Close YouTube floating video panel and stop playback */
 function closeYouTubeModal() {
-    const modal  = document.getElementById('yt-video-modal');
+    const panel  = document.getElementById('yt-float-panel');
     const iframe = document.getElementById('yt-video-iframe');
-    if (!modal) return;
-    modal.style.display = 'none';
+    if (!panel) return;
+    panel.style.display = 'none';
     if (iframe) iframe.src = '';
 }
+
+/** Initialise drag and resize behaviour for the YouTube floating panel.
+ *  Uses Pointer Events so it works on mouse, touch and stylus. */
+(function _initYtFloatPanel() {
+    // Wait for DOM
+    document.addEventListener('DOMContentLoaded', function () {
+        const panel      = document.getElementById('yt-float-panel');
+        if (!panel) return;
+        const header     = document.getElementById('yt-float-header');
+        const minBtn     = document.getElementById('yt-float-min-btn');
+        const closeBtn   = document.getElementById('yt-float-close-btn');
+        const resizeHdl  = document.getElementById('yt-float-resize');
+
+        // ── Minimize / restore ──────────────────────────────────────────────
+        minBtn.addEventListener('click', function () {
+            const isMin = panel.classList.toggle('is-minimized');
+            if (isMin) {
+                // Collapse: save explicit height, switch to auto
+                panel._savedHeight = panel.style.height;
+                panel.style.height = '';
+            } else {
+                // Restore saved height (or default)
+                panel.style.height = panel._savedHeight || '276px';
+            }
+            minBtn.textContent = isMin ? '□' : '—';
+            minBtn.setAttribute('aria-label', isMin ? 'Restaurar video' : 'Minimizar video');
+        });
+
+        closeBtn.addEventListener('click', closeYouTubeModal);
+
+        // ── Drag via header ─────────────────────────────────────────────────
+        // On pointerdown we capture the pointer so move/up fire even outside the panel
+        header.addEventListener('pointerdown', function (e) {
+            if (e.target.closest('.yt-float-btn')) return; // ignore button clicks
+            e.preventDefault();
+            header.setPointerCapture(e.pointerId);
+
+            const startPX = e.clientX, startPY = e.clientY;
+            const startL  = parseInt(panel.style.left, 10) || 0;
+            const startT  = parseInt(panel.style.top,  10) || 0;
+
+            function onMove(ev) {
+                const dx = ev.clientX - startPX;
+                const dy = ev.clientY - startPY;
+                const w  = panel.offsetWidth;
+                const h  = panel.offsetHeight;
+                // Constrain within viewport so panel never escapes the screen
+                panel.style.left = Math.max(0, Math.min(startL + dx, window.innerWidth  - w)) + 'px';
+                panel.style.top  = Math.max(0, Math.min(startT + dy, window.innerHeight - h)) + 'px';
+            }
+            function onUp() {
+                header.removeEventListener('pointermove', onMove);
+                header.removeEventListener('pointerup',  onUp);
+            }
+            header.addEventListener('pointermove', onMove);
+            header.addEventListener('pointerup',  onUp);
+        });
+
+        // ── Resize via bottom-right corner handle ───────────────────────────
+        resizeHdl.addEventListener('pointerdown', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            resizeHdl.setPointerCapture(e.pointerId);
+
+            const startPX = e.clientX, startPY = e.clientY;
+            const startW  = panel.offsetWidth;
+            const startH  = panel.offsetHeight;
+            const panelL  = parseInt(panel.style.left, 10) || 0;
+            const panelT  = parseInt(panel.style.top,  10) || 0;
+            const MIN_W   = 280, MIN_H = 40;
+
+            function onMove(ev) {
+                const dx = ev.clientX - startPX;
+                const dy = ev.clientY - startPY;
+                // Grow/shrink panel; clamp to min size and viewport right/bottom edge
+                const newW = Math.max(MIN_W, Math.min(startW + dx, window.innerWidth  - panelL));
+                const newH = Math.max(MIN_H, Math.min(startH + dy, window.innerHeight - panelT));
+                panel.style.width  = newW + 'px';
+                panel.style.height = newH + 'px';
+                // Keep saved height in sync so minimize/restore uses the new size
+                panel._savedHeight = newH + 'px';
+            }
+            function onUp() {
+                resizeHdl.removeEventListener('pointermove', onMove);
+                resizeHdl.removeEventListener('pointerup',  onUp);
+            }
+            resizeHdl.addEventListener('pointermove', onMove);
+            resizeHdl.addEventListener('pointerup',  onUp);
+        });
+    });
+}());
 
 function _initMtPanelDrag(panel, handle) {
     handle.addEventListener('mousedown', function (e) {
@@ -9740,17 +9878,20 @@ async function enviarConvocatoria() {
     </div>
 </div>
 
-<!-- YouTube Video Modal -->
-<div id="yt-video-modal" onclick="if(event.target===this)closeYouTubeModal()">
-    <div id="yt-video-modal-inner">
-        <div id="yt-video-title-bar"></div>
-        <div id="yt-video-container">
-            <iframe id="yt-video-iframe" src="" allowfullscreen
-                    allow="autoplay; encrypted-media; picture-in-picture"></iframe>
-        </div>
-        <button id="yt-video-close-btn" onclick="closeYouTubeModal()" aria-label="Cerrar video">✕</button>
+<!-- YouTube Floating Video Panel – draggable, resizable, minimizable -->
+<div id="yt-float-panel" role="dialog" aria-label="Reproductor de video">
+    <!-- Drag handle: grab anywhere on the header to move the panel -->
+    <div id="yt-float-header">
+        <span id="yt-float-title">▶ Video</span>
+        <button class="yt-float-btn" id="yt-float-min-btn"   aria-label="Minimizar video"  title="Minimizar">—</button>
+        <button class="yt-float-btn" id="yt-float-close-btn" aria-label="Cerrar video"      title="Cerrar (Esc)">✕</button>
     </div>
-    <div id="yt-video-hint">Presioná Esc para cerrar</div>
+    <div id="yt-float-body">
+        <iframe id="yt-video-iframe" src="" allowfullscreen
+                allow="autoplay; encrypted-media; picture-in-picture"></iframe>
+    </div>
+    <!-- Resize handle: drag the bottom-right corner to resize the panel -->
+    <div id="yt-float-resize" aria-hidden="true" title="Redimensionar"></div>
 </div>
 
 <!-- ══ MÓDULO BUSCO EMPLEADOS/AS — Modal de postulación ═════════════════════ -->
