@@ -119,7 +119,11 @@ $og_desc = $og_desc_header . ' — ' . $og_desc_body;
 $og_image = !empty($encuesta['imagen']) && preg_match('/^[\w\-]+\.(jpg|jpeg|png|gif|webp)$/i', $encuesta['imagen'])
     ? $scheme . '://' . $host . '/uploads/encuestas/' . rawurlencode($encuesta['imagen'])
     : $scheme . '://' . $host . '/api/og_image.php?type=encuesta&id=' . $id;
-$og_url    = $scheme . '://' . $host . '/encuesta?id=' . $id;
+$og_url         = $scheme . '://' . $host . '/encuesta?id=' . $id;
+$og_description = $og_desc;
+$og_site_name   = 'Mapita — Encuestas';
+$og_type        = 'website';
+$twitter_card   = 'summary_large_image';
 $mapUrl    = '/?ver=encuesta&id=' . $id;
 $shareText = urlencode('📊 ' . $encuesta['titulo']
     . ($localidad ? ' — ' . $localidad : '')
@@ -133,20 +137,7 @@ $shareText = urlencode('📊 ' . $encuesta['titulo']
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title><?= htmlspecialchars($encuesta['titulo']) ?><?= $localidad ? ' en ' . htmlspecialchars($localidad) : '' ?> · Mapita Encuestas</title>
-<meta name="description" content="<?= htmlspecialchars($og_desc) ?>">
-<meta property="og:type"        content="website">
-<meta property="og:site_name"   content="Mapita — Encuestas">
-<meta property="og:title"       content="<?= htmlspecialchars($og_title) ?>">
-<meta property="og:description" content="<?= htmlspecialchars($og_desc) ?>">
-<meta property="og:image"       content="<?= htmlspecialchars($og_image) ?>">
-<meta property="og:image:width" content="1200">
-<meta property="og:image:height"content="630">
-<meta property="og:url"         content="<?= htmlspecialchars($og_url) ?>">
-<meta name="twitter:card"        content="summary_large_image">
-<meta name="twitter:title"       content="<?= htmlspecialchars($og_title) ?>">
-<meta name="twitter:description" content="<?= htmlspecialchars($og_desc) ?>">
-<meta name="twitter:image"       content="<?= htmlspecialchars($og_image) ?>">
-<link rel="canonical" href="<?= htmlspecialchars($og_url) ?>">
+<?php include __DIR__ . '/../../includes/meta_og.php'; ?>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth}
