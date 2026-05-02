@@ -440,14 +440,14 @@ $tab = in_array($_GET['tab'] ?? '', $validTabs) ? $_GET['tab'] : 'negocios';
     <div class="tab-content <?php echo $tab==='encuestas' ? 'active' : ''; ?>" id="tab-encuestas">
         <div class="section-header">
             <h2>📋 Encuestas Georreferenciadas</h2>
-            <button class="btn btn-primary" onclick="openModal('encuesta')">+ Nueva Encuesta</button>
+            <a href="/admin/encuestas/dashboard.php?action=create" class="btn btn-primary">+ Nueva Encuesta</a>
         </div>
 
         <!-- Gateway al panel profesional -->
         <div style="background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);border-radius:12px;padding:18px 22px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;">
             <div style="color:white;">
                 <div style="font-size:1rem;font-weight:700;margin-bottom:3px;">🎓 Panel Profesional de Encuestas</div>
-                <div style="font-size:0.82rem;opacity:.9;">Gestión avanzada: crear preguntas, ver estadísticas detalladas por respuesta, analizar participación y más.</div>
+                <div style="font-size:0.82rem;opacity:.9;">Crear, editar y gestionar encuestas: preguntas, estadísticas detalladas, link externo, imagen y más.</div>
             </div>
             <a href="/admin/encuestas/dashboard.php" target="_blank"
                style="background:white;color:#764ba2;font-weight:700;padding:9px 18px;border-radius:8px;text-decoration:none;font-size:0.85rem;white-space:nowrap;flex-shrink:0;">
@@ -1149,11 +1149,14 @@ function renderList(type, items) {
     const container = document.getElementById(type + '-list');
     const singularType = getSingularType(type);
     if (!items.length) {
+        const createBtn = type === 'encuestas'
+            ? `<a href="/admin/encuestas/dashboard.php?action=create" class="btn btn-primary">Crear primero</a>`
+            : `<button class="btn btn-primary" onclick="openModal('${singularType}')">Crear primero</button>`;
         container.innerHTML = `
             <div style="text-align:center;padding:40px;color:var(--text-tertiary);">
                 <p style="font-size:2rem;">📭</p>
                 <p>No hay ${type} creados aún</p>
-                <button class="btn btn-primary" onclick="openModal('${singularType}')">Crear primero</button>
+                ${createBtn}
             </div>`;
         return;
     }
@@ -1185,7 +1188,10 @@ function renderList(type, items) {
                 </div>
             </div>
             <div class="card-actions" style="display:flex;gap:8px;flex-shrink:0;">
-                <button class="btn btn-sm btn-secondary" onclick="editItem('${singularType}',${item.id})">✏️ Editar</button>
+                ${type === 'encuestas'
+                    ? `<a href="/admin/encuestas/dashboard.php?action=edit&id=${item.id}" class="btn btn-sm btn-secondary">✏️ Editar</a>`
+                    : `<button class="btn btn-sm btn-secondary" onclick="editItem('${singularType}',${item.id})">✏️ Editar</button>`
+                }
                 <button class="btn btn-sm btn-danger"    onclick="deleteItem('${singularType}',${item.id})">🗑 Eliminar</button>
             </div>
         </div>`;
