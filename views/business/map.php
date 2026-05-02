@@ -8826,8 +8826,8 @@ function _renderMtItems(items, sortBy) {
 /** Extract YouTube video ID from a URL (youtu.be/ID or watch?v=ID) */
 function _extractYTVideoId(url) {
     if (!url) return null;
-    const m1 = url.match(/youtu\.be\/([^?&#/]+)/);
-    const m2 = url.match(/[?&]v=([^&#]+)/);
+    const m1 = url.match(/youtu\.be\/([a-zA-Z0-9_-]{11})/);
+    const m2 = url.match(/[?&]v=([a-zA-Z0-9_-]{11})/);
     return m1 ? m1[1] : (m2 ? m2[1] : null);
 }
 
@@ -8837,6 +8837,7 @@ function openYouTubeModal(videoId, titulo) {
     const iframe = document.getElementById('yt-video-iframe');
     const titleEl = document.getElementById('yt-video-title-bar');
     if (!modal || !iframe) return;
+    if (!/^[a-zA-Z0-9_-]{11}$/.test(videoId)) return;
     if (titleEl) titleEl.textContent = titulo || '';
     iframe.src = 'https://www.youtube.com/embed/' + encodeURIComponent(videoId) + '?autoplay=1&rel=0';
     modal.style.display = 'flex';
@@ -9736,7 +9737,7 @@ async function enviarConvocatoria() {
     <div id="yt-video-modal-inner">
         <div id="yt-video-title-bar"></div>
         <div id="yt-video-container">
-            <iframe id="yt-video-iframe" src="" frameborder="0" allowfullscreen
+            <iframe id="yt-video-iframe" src="" allowfullscreen
                     allow="autoplay; encrypted-media; picture-in-picture"></iframe>
         </div>
         <button id="yt-video-close-btn" onclick="closeYouTubeModal()" aria-label="Cerrar video">✕</button>
