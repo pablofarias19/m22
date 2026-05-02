@@ -9,6 +9,7 @@
  *   $og_description string   Descripción (obligatorio)
  *   $og_url         string   URL canónica completa  (opcional — se auto-detecta)
  *   $og_image       string   URL absoluta de la imagen (opcional — se usa la genérica)
+ *   $og_image_mime  string   MIME type de la imagen, ej. 'image/jpeg' (opcional — se auto-detecta por extensión)
  *   $og_type        string   'website' | 'article' | 'business.business' (default: website)
  *   $og_locale      string   'es_AR' (default)
  *   $og_site_name   string   Nombre del sitio (default: Mapita)
@@ -38,6 +39,22 @@ $base_url    = $scheme_base . '://' . $host_base;
 
 if (empty($og_image)) {
     $og_image = $base_url . '/api/og_image.php';
+}
+
+// ── Detectar MIME type de la imagen desde la URL ──────────────────────────────
+// El endpoint /api/og_image.php siempre genera PNG; imágenes subidas pueden
+// ser JPEG, WebP u otras — se detecta por extensión para mayor precisión.
+if (empty($og_image_mime)) {
+    $parsedPath = parse_url($og_image ?? '', PHP_URL_PATH);
+    $imgPath    = strtok($parsedPath ?? '', '?');
+    $ext        = strtolower(pathinfo((string)$imgPath, PATHINFO_EXTENSION));
+    $og_image_mime = match ($ext) {
+        'jpg', 'jpeg' => 'image/jpeg',
+        'webp'        => 'image/webp',
+        'gif'         => 'image/gif',
+        'png'         => 'image/png',
+        default       => 'image/png',  // API endpoint y PNG subidos
+    };
 }
 
 // ── Sanitizar ─────────────────────────────────────────────────────────────────
@@ -70,7 +87,7 @@ if (mb_strlen($og_description) > 200) {
     <meta property="og:description" content="<?php echo $og_description; ?>">
     <meta property="og:image"              content="<?php echo $og_image; ?>">
     <meta property="og:image:secure_url"   content="<?php echo $og_image; ?>">
-    <meta property="og:image:type"         content="image/png">
+    <meta property="og:image:type"         content="<?php echo htmlspecialchars($og_image_mime, ENT_QUOTES); ?>">
     <meta property="og:image:width"        content="1200">
     <meta property="og:image:height"       content="630">
     <meta property="og:image:alt"          content="<?php echo $og_title; ?>">

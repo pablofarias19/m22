@@ -3,13 +3,15 @@
  * og_image.php — Generador dinámico de imágenes Open Graph (1200×630 px)
  *
  * Parámetros GET:
- *   id        int     ID del negocio
- *   type      string  'business' (default: genérica del sitio)
+ *   id        int     ID del recurso
+ *   brand_id  int     ID de la marca (solo para type=brand)
+ *   type      string  'business' | 'brand' | 'evento' | 'noticia' | 'encuesta'
+ *                     (sin type → imagen genérica del sitio)
  *
  * Lógica de fondo:
- *   1. Si el negocio tiene foto → foto real como fondo + overlay oscuro + texto
- *   2. Si no tiene foto         → fondo azul degradado con decoración geométrica
- *   3. Si GD no está            → redirect a /img/og-mapita.png
+ *   1. Si el recurso tiene foto  → foto real como fondo + overlay oscuro + texto
+ *   2. Si no tiene foto          → fondo azul degradado con decoración geométrica
+ *   3. Si GD no está disponible  → redirect a /img/og-mapita.png
  */
 
 ini_set('display_errors', 0);
