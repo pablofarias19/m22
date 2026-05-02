@@ -8,9 +8,31 @@
 session_start();
 require_once __DIR__ . '/../core/Database.php';
 require_once __DIR__ . '/../core/helpers.php';
+require_once __DIR__ . '/../models/Multitud.php';
 
 $validTabs = ['negocios','marcas','noticias','eventos','trivias','encuestas','ofertas','transmisiones','multitudes','moderacion','sectores','comercial','camaras','agencias','lineas','competencias','radar_legal','consultas_archivadas','permisos'];
 $tab = in_array($_GET['tab'] ?? '', $validTabs) ? $_GET['tab'] : 'negocios';
+
+// Fetch latest 5 multitudes for the Transmisiones tab preview (graceful if table missing)
+$multitudes_preview   = [];
+$multitudes_db_ok     = false;
+try {
+    $db_preview = \Core\Database::getInstance()->getConnection();
+    $stmt_prev  = $db_preview->query(
+        "SELECT m.id, m.nombre, m.activo,
+                COUNT(mi.id) AS total_items
+         FROM multitudes m
+         LEFT JOIN multitud_items mi ON mi.multitud_id = m.id
+         GROUP BY m.id
+         ORDER BY m.id DESC
+         LIMIT 5"
+    );
+    $multitudes_preview = $stmt_prev->fetchAll(PDO::FETCH_ASSOC);
+    $multitudes_db_ok   = true;
+} catch (\Exception $e) {
+    // Table doesn't exist yet — show migration warning in the UI
+    $multitudes_db_ok = false;
+}
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -311,6 +333,7 @@ $tab = in_array($_GET['tab'] ?? '', $validTabs) ? $_GET['tab'] : 'negocios';
         <button id="tab-btn-encuestas"      class="tab-btn <?php echo $tab==='encuestas'      ? 'active' : ''; ?>" onclick="switchTab('encuestas')">📋 Encuestas</button>
         <button id="tab-btn-ofertas"        class="tab-btn <?php echo $tab==='ofertas'        ? 'active' : ''; ?>" onclick="switchTab('ofertas')">🏷️ Ofertas</button>
         <button id="tab-btn-transmisiones"  class="tab-btn <?php echo $tab==='transmisiones'  ? 'active' : ''; ?>" onclick="switchTab('transmisiones')">📡 En Vivo</button>
+        <button id="tab-btn-multitudes"     class="tab-btn <?php echo $tab==='multitudes'     ? 'active' : ''; ?>" onclick="switchTab('multitudes')">👥 Multitudes</button>
         <button id="tab-btn-moderacion"     class="tab-btn <?php echo $tab==='moderacion'     ? 'active' : ''; ?>" onclick="switchTab('moderacion')">🚨 Moderación</button>
         <button id="tab-btn-sectores"       class="tab-btn <?php echo $tab==='sectores'       ? 'active' : ''; ?>" onclick="switchTab('sectores')">🏭 Catálogo: Sectores Ind.</button>
         <button id="tab-btn-comercial"      class="tab-btn <?php echo $tab==='comercial'      ? 'active' : ''; ?>" onclick="switchTab('comercial')">🏪 Sectores Comerciales</button>
@@ -478,7 +501,107 @@ $tab = in_array($_GET['tab'] ?? '', $validTabs) ? $_GET['tab'] : 'negocios';
             <h2>📡 Transmisiones en Vivo</h2>
             <button class="btn btn-primary" onclick="openModal('transmision')">+ Nueva Transmisión</button>
         </div>
+
+        <!-- CTA Multitudes -->
+        <div style="background:linear-gradient(135deg,#4f46e5 0%,#7c3aed 100%);border-radius:12px;padding:18px 22px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;">
+            <div style="color:white;">
+                <div style="font-size:1rem;font-weight:700;margin-bottom:3px;">👥 Multitudes — Múltiples links bajo un mismo pin</div>
+                <div style="font-size:0.82rem;opacity:.9;">Agrupá varios links de YouTube/stream bajo un único ícono en el mapa. Al hacer clic se abre un popup con todos los enlaces.</div>
+            </div>
+            <a href="/admin/?tab=multitudes"
+               style="background:white;color:#4f46e5;font-weight:700;padding:9px 18px;border-radius:8px;text-decoration:none;font-size:0.85rem;white-space:nowrap;flex-shrink:0;">
+                Ir a Multitudes →
+            </a>
+        </div>
+
+        <?php if (!$multitudes_db_ok): ?>
+        <!-- Warning: migration pending -->
+        <div style="background:#fff3cd;border:1px solid #ffc107;border-radius:10px;padding:14px 18px;margin-bottom:20px;display:flex;align-items:flex-start;gap:12px;">
+            <span style="font-size:1.4rem;">⚠️</span>
+            <div>
+                <strong>Tablas de Multitudes no encontradas.</strong>
+                Para activar esta función ejecutá la migración en tu base de datos:<br>
+                <code style="background:#f8f9fa;padding:2px 6px;border-radius:4px;font-size:.85em;">migrations/041_multitudes.sql</code>
+            </div>
+        </div>
+        <?php elseif (!empty($multitudes_preview)): ?>
+        <!-- Compact latest multitudes list -->
+        <div style="background:white;border:1px solid #e5e7eb;border-radius:10px;margin-bottom:20px;overflow:hidden;">
+            <div style="background:#f3f0ff;padding:12px 18px;font-weight:600;font-size:.9rem;color:#4f46e5;display:flex;align-items:center;justify-content:space-between;">
+                <span>👥 Últimas Multitudes</span>
+                <a href="/admin/multitudes/dashboard.php" style="color:#4f46e5;font-size:.8rem;text-decoration:none;font-weight:600;">Administrar →</a>
+            </div>
+            <table style="width:100%;border-collapse:collapse;font-size:.88em;">
+                <thead>
+                    <tr style="background:#fafbfc;">
+                        <th style="padding:9px 14px;text-align:left;color:#555;font-weight:600;">#</th>
+                        <th style="padding:9px 14px;text-align:left;color:#555;font-weight:600;">Nombre</th>
+                        <th style="padding:9px 14px;text-align:center;color:#555;font-weight:600;">Items</th>
+                        <th style="padding:9px 14px;text-align:center;color:#555;font-weight:600;">Estado</th>
+                        <th style="padding:9px 14px;text-align:center;color:#555;font-weight:600;">Acción</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($multitudes_preview as $m): ?>
+                    <tr style="border-top:1px solid #f0f0f0;">
+                        <td style="padding:9px 14px;color:#888;"><?php echo (int)$m['id']; ?></td>
+                        <td style="padding:9px 14px;font-weight:500;"><?php echo htmlspecialchars($m['nombre']); ?></td>
+                        <td style="padding:9px 14px;text-align:center;"><?php echo (int)$m['total_items']; ?></td>
+                        <td style="padding:9px 14px;text-align:center;">
+                            <?php if ($m['activo']): ?>
+                                <span style="background:#d1fae5;color:#065f46;padding:2px 8px;border-radius:12px;font-size:.8em;">✅ Activa</span>
+                            <?php else: ?>
+                                <span style="background:#f3f4f6;color:#6b7280;padding:2px 8px;border-radius:12px;font-size:.8em;">⏸ Inactiva</span>
+                            <?php endif; ?>
+                        </td>
+                        <td style="padding:9px 14px;text-align:center;">
+                            <a href="/admin/multitudes/dashboard.php?edit=<?php echo (int)$m['id']; ?>" style="color:#4f46e5;font-size:.82em;text-decoration:none;">Editar</a>
+                        </td>
+                    </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
+        <?php endif; ?>
+
         <div id="transmisiones-list"></div>
+    </div>
+
+    <!-- MULTITUDES -->
+    <div class="tab-content <?php echo $tab==='multitudes' ? 'active' : ''; ?>" id="tab-multitudes">
+        <div class="section-header">
+            <h2>👥 Multitudes</h2>
+            <a href="/admin/multitudes/dashboard.php" class="btn btn-primary" style="text-decoration:none;">+ Nueva Multitud</a>
+        </div>
+
+        <!-- Gateway al panel profesional -->
+        <div style="background:linear-gradient(135deg,#4f46e5 0%,#7c3aed 100%);border-radius:12px;padding:18px 22px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;">
+            <div style="color:white;">
+                <div style="font-size:1rem;font-weight:700;margin-bottom:3px;">👥 Panel de Multitudes</div>
+                <div style="font-size:0.82rem;opacity:.9;">Agrupá múltiples links de YouTube o streaming bajo un único pin en el mapa. Al hacer clic se abre un popup con todos los enlaces organizados.</div>
+            </div>
+            <a href="/admin/multitudes/dashboard.php" target="_blank"
+               style="background:white;color:#4f46e5;font-weight:700;padding:9px 18px;border-radius:8px;text-decoration:none;font-size:0.85rem;white-space:nowrap;flex-shrink:0;">
+                Abrir panel →
+            </a>
+        </div>
+
+        <?php if (!$multitudes_db_ok): ?>
+        <div style="background:#fff3cd;border:1px solid #ffc107;border-radius:10px;padding:14px 18px;margin-bottom:20px;display:flex;align-items:flex-start;gap:12px;">
+            <span style="font-size:1.4rem;">⚠️</span>
+            <div>
+                <strong>Tablas de Multitudes no encontradas.</strong>
+                Para activar esta función ejecutá la migración en tu base de datos:<br>
+                <code style="background:#f8f9fa;padding:2px 6px;border-radius:4px;font-size:.85em;">migrations/041_multitudes.sql</code>
+            </div>
+        </div>
+        <?php else: ?>
+        <div style="background:white;border:1px solid #e5e7eb;border-radius:10px;padding:24px;text-align:center;color:#6b7280;">
+            <div style="font-size:2rem;margin-bottom:8px;">👥</div>
+            <p style="margin:0 0 12px;">Gestioná tus multitudes desde el panel dedicado.</p>
+            <a href="/admin/multitudes/dashboard.php" class="btn btn-primary" style="text-decoration:none;">Ir al Panel de Multitudes</a>
+        </div>
+        <?php endif; ?>
     </div>
 
     <!-- CATÁLOGO: SECTORES INDUSTRIALES (Admin) -->
