@@ -1196,8 +1196,72 @@ try {
         .mt-item-meta  { font-size: 11px; color: #6b7280; display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 2px; }
         .mt-item-desc  { font-size: 11px; color: #7c3aed; }
         .mt-item-arrow { font-size: 14px; color: #7c3aed; align-self: center; flex-shrink: 0; }
+        .mt-item-yt-badge { display:inline-block; background:#ff0000; color:#fff; font-size:10px; font-weight:700; padding:2px 6px; border-radius:4px; margin-left:6px; vertical-align:middle; letter-spacing:.3px; }
         /* Empty state */
         .mt-empty { padding: 20px; text-align: center; color: #9ca3af; font-size: 13px; }
+
+        /* ── YouTube Video Modal ── */
+        #yt-video-modal {
+            display: none;
+            position: fixed;
+            z-index: 10200;
+            left: 0; top: 0;
+            width: 100%; height: 100%;
+            background-color: rgba(0,0,0,0.88);
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+        }
+        #yt-video-modal-inner {
+            position: relative;
+            width: 90%;
+            max-width: 854px;
+        }
+        #yt-video-title-bar {
+            color: #fff;
+            font-size: 14px;
+            font-weight: 700;
+            margin-bottom: 10px;
+            text-align: center;
+            padding: 0 40px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        #yt-video-container {
+            position: relative;
+            padding-top: 56.25%; /* 16:9 */
+            background: #000;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 8px 40px rgba(0,0,0,0.6);
+        }
+        #yt-video-iframe {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            border: none;
+        }
+        #yt-video-close-btn {
+            position: absolute;
+            top: -42px; right: 0;
+            background: rgba(255,255,255,0.9);
+            color: #333;
+            border: none;
+            width: 35px; height: 35px;
+            border-radius: 50%;
+            font-size: 18px;
+            cursor: pointer;
+            transition: background .15s;
+            line-height: 1;
+        }
+        #yt-video-close-btn:hover { background: #fff; }
+        #yt-video-hint {
+            color: #999;
+            margin-top: 14px;
+            font-size: 12px;
+            text-align: center;
+        }
         /* Sidebar pill */
         .mt-sidebar-item {
             padding: 9px 11px;
@@ -6744,6 +6808,13 @@ function updateGalleryNav() {
 
 // Keyboard navigation
 document.addEventListener('keydown', (e) => {
+    // YouTube modal has highest priority
+    const ytModal = document.getElementById('yt-video-modal');
+    if (ytModal && ytModal.style.display === 'flex') {
+        if (e.key === 'Escape') { e.preventDefault(); closeYouTubeModal(); }
+        return;
+    }
+
     const modal = document.getElementById('photo-gallery-modal');
     if (modal.style.display !== 'flex') {
         if (e.key === 'Escape' && selectionMode) {
@@ -8714,21 +8785,32 @@ function _renderMtItems(items, sortBy) {
 
     lista.innerHTML = '';
     sorted.forEach(item => {
+        const ytId = _extractYTVideoId(item.stream_url || '');
         const a = document.createElement('a');
         a.className = 'mt-item';
-        a.href = item.stream_url || '#';
-        a.target = '_blank';
-        a.rel = 'noopener noreferrer';
-        if (!item.stream_url) { a.removeAttribute('href'); a.style.cursor = 'default'; }
+        if (ytId) {
+            a.href = '#';
+            a.addEventListener('click', function (ev) {
+                ev.preventDefault();
+                openYouTubeModal(ytId, item.titulo);
+            });
+        } else if (item.stream_url) {
+            a.href = item.stream_url;
+            a.target = '_blank';
+            a.rel = 'noopener noreferrer';
+        } else {
+            a.removeAttribute('href');
+            a.style.cursor = 'default';
+        }
 
         const dateStr = item.fecha_periodo
             ? new Date(item.fecha_periodo + 'T00:00:00').toLocaleDateString('es-AR', { day:'2-digit', month:'short', year:'numeric' })
             : '';
 
         a.innerHTML = `
-            <span class="mt-item-icon">🎬</span>
+            <span class="mt-item-icon">${ytId ? '▶️' : '🎬'}</span>
             <div class="mt-item-body">
-                <div class="mt-item-title">${escapeHtml(item.titulo)}</div>
+                <div class="mt-item-title">${escapeHtml(item.titulo)}${ytId ? '<span class="mt-item-yt-badge">YouTube</span>' : ''}</div>
                 <div class="mt-item-meta">
                     ${item.grupo_artista ? '<span>👤 ' + escapeHtml(item.grupo_artista) + '</span>' : ''}
                     ${dateStr            ? '<span>📅 ' + escapeHtml(dateStr)            + '</span>' : ''}
@@ -8739,6 +8821,34 @@ function _renderMtItems(items, sortBy) {
         `;
         lista.appendChild(a);
     });
+}
+
+/** Extract YouTube video ID from a URL (youtu.be/ID or watch?v=ID) */
+function _extractYTVideoId(url) {
+    if (!url) return null;
+    const m1 = url.match(/youtu\.be\/([^?&#/]+)/);
+    const m2 = url.match(/[?&]v=([^&#]+)/);
+    return m1 ? m1[1] : (m2 ? m2[1] : null);
+}
+
+/** Open YouTube video overlay on the map */
+function openYouTubeModal(videoId, titulo) {
+    const modal  = document.getElementById('yt-video-modal');
+    const iframe = document.getElementById('yt-video-iframe');
+    const titleEl = document.getElementById('yt-video-title-bar');
+    if (!modal || !iframe) return;
+    if (titleEl) titleEl.textContent = titulo || '';
+    iframe.src = 'https://www.youtube.com/embed/' + encodeURIComponent(videoId) + '?autoplay=1&rel=0';
+    modal.style.display = 'flex';
+}
+
+/** Close YouTube video overlay and stop playback */
+function closeYouTubeModal() {
+    const modal  = document.getElementById('yt-video-modal');
+    const iframe = document.getElementById('yt-video-iframe');
+    if (!modal) return;
+    modal.style.display = 'none';
+    if (iframe) iframe.src = '';
 }
 
 function _initMtPanelDrag(panel, handle) {
@@ -9619,6 +9729,19 @@ async function enviarConvocatoria() {
     <div style="color:#999;margin-top:15px;font-size:12px;text-align:center;">
         Usa ← → para navegar o Esc para cerrar
     </div>
+</div>
+
+<!-- YouTube Video Modal -->
+<div id="yt-video-modal" onclick="if(event.target===this)closeYouTubeModal()">
+    <div id="yt-video-modal-inner">
+        <div id="yt-video-title-bar"></div>
+        <div id="yt-video-container">
+            <iframe id="yt-video-iframe" src="" frameborder="0" allowfullscreen
+                    allow="autoplay; encrypted-media; picture-in-picture"></iframe>
+        </div>
+        <button id="yt-video-close-btn" onclick="closeYouTubeModal()" aria-label="Cerrar video">✕</button>
+    </div>
+    <div id="yt-video-hint">Presioná Esc para cerrar</div>
 </div>
 
 <!-- ══ MÓDULO BUSCO EMPLEADOS/AS — Modal de postulación ═════════════════════ -->
