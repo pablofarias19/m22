@@ -1078,6 +1078,140 @@ try {
         .tx-tipo-pill:hover { background:#fee2e2; }
         .tx-tipo-active { background:#c0392b !important;color:#fff !important;border-color:#9b1c1c !important; }
 
+        /* ── MULTITUDES float panel ─────────────────────────────────── */
+        #mt-float-panel {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 5000;
+            background: #fff;
+            border-radius: 14px;
+            box-shadow: 0 8px 32px rgba(79,70,229,0.28);
+            display: none;
+            flex-direction: column;
+            width: 400px;
+            max-width: calc(100vw - 32px);
+            max-height: 80vh;
+            overflow: hidden;
+            font-family: inherit;
+        }
+        #mt-float-panel.is-minimized { width: 300px; border-radius: 8px; }
+        #mt-float-panel.is-minimized .mt-panel-body { display: none; }
+        #mt-float-panel-header {
+            background: linear-gradient(135deg, #4f46e5, #3730a3);
+            color: white;
+            padding: 11px 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: move;
+            user-select: none;
+            min-width: 0;
+            flex-shrink: 0;
+        }
+        #mt-float-panel-title {
+            flex: 1;
+            font-size: 13px;
+            font-weight: 700;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            min-width: 0;
+        }
+        .mt-panel-btn {
+            background: rgba(255,255,255,0.18);
+            border: none;
+            color: white;
+            cursor: pointer;
+            border-radius: 4px;
+            width: 26px;
+            height: 26px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            flex-shrink: 0;
+            transition: background 0.15s;
+        }
+        .mt-panel-btn:hover { background: rgba(255,255,255,0.32); }
+        .mt-panel-body {
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+            overflow: hidden;
+        }
+        .mt-panel-desc {
+            margin: 0;
+            padding: 10px 14px 4px;
+            font-size: 12px;
+            color: #6b7280;
+            border-bottom: 1px solid #ede9fe;
+            flex-shrink: 0;
+        }
+        /* Sort tabs */
+        .mt-sort-tabs {
+            display: flex;
+            gap: 6px;
+            padding: 8px 14px;
+            border-bottom: 1px solid #ede9fe;
+            flex-shrink: 0;
+            background: #f5f3ff;
+        }
+        .mt-sort-tab {
+            padding: 4px 11px;
+            border: 1px solid #c4b5fd;
+            border-radius: 20px;
+            background: #fff;
+            color: #4f46e5;
+            font-size: 11px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all .15s;
+        }
+        .mt-sort-tab:hover { background: #ede9fe; }
+        .mt-sort-tab.mt-tab-active { background: #4f46e5; color: #fff; border-color: #3730a3; }
+        /* Items list */
+        .mt-items-list {
+            overflow-y: auto;
+            padding: 8px 10px;
+            flex: 1;
+        }
+        .mt-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            padding: 10px 12px;
+            background: linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%);
+            border: 1px solid #c4b5fd;
+            border-radius: 8px;
+            margin-bottom: 7px;
+            cursor: pointer;
+            transition: box-shadow 0.15s, transform 0.15s;
+            text-decoration: none;
+        }
+        .mt-item:hover { box-shadow: 0 4px 14px rgba(79,70,229,0.22); transform: translateY(-1px); }
+        .mt-item-icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+        .mt-item-body { flex: 1; min-width: 0; }
+        .mt-item-title { font-size: 13px; font-weight: 700; color: #1e1b4b; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .mt-item-meta  { font-size: 11px; color: #6b7280; display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 2px; }
+        .mt-item-desc  { font-size: 11px; color: #7c3aed; }
+        .mt-item-arrow { font-size: 14px; color: #7c3aed; align-self: center; flex-shrink: 0; }
+        /* Empty state */
+        .mt-empty { padding: 20px; text-align: center; color: #9ca3af; font-size: 13px; }
+        /* Sidebar pill */
+        .mt-sidebar-item {
+            padding: 9px 11px;
+            background: linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%);
+            border-radius: 7px;
+            margin-bottom: 7px;
+            cursor: pointer;
+            transition: all .18s;
+            border: 1px solid #c4b5fd;
+        }
+        .mt-sidebar-item:hover { box-shadow: 0 3px 10px rgba(79,70,229,0.2); transform: translateY(-1px); }
+        .mt-sidebar-title { font-size: 13px; font-weight: 700; color: #1e1b4b; margin: 0 0 2px; }
+        .mt-sidebar-sub   { font-size: 11px; color: #6b7280; margin: 0; }
+
         /* ── Zoom buttons: bottom-center on mobile ── */
         @media (max-width: 768px) {
             .leaflet-control-zoom {
@@ -1883,6 +2017,27 @@ try {
         </div>
     </div>
 
+    <!-- MULTITUDES -->
+    <div id="multitudes-container" class="sidebar-card" style="display:none;border-left:4px solid #4f46e5;padding:0;overflow:hidden;">
+        <div class="sb-mod-hdr open" onclick="toggleSbModule(this)">
+            <h3 style="margin:0;font-size:13px;color:#4f46e5;font-weight:700;display:flex;align-items:center;gap:5px;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#4f46e5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                    <circle cx="9" cy="7" r="4"/>
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                </svg>
+                MULTITUDES
+            </h3>
+            <svg class="sb-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#4f46e5" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="sb-mod-body open">
+            <div class="sb-mod-body-inner">
+                <div id="multitudes-list" style="padding:8px 10px;"></div>
+            </div>
+        </div>
+    </div>
+
     <?php if (isAdmin()): ?>
     <!-- Admin: Toggle capas del mapa -->
     <div class="sb-section" id="sb-sec-admin">
@@ -1919,6 +2074,10 @@ try {
                     <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12px;">
                         <input type="checkbox" id="toggle-transmisiones" checked onchange="toggleCapa('transmisiones',this.checked)" style="width:auto;margin:0;">
                         📡 Transmisiones
+                    </label>
+                    <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12px;">
+                        <input type="checkbox" id="toggle-multitudes" checked onchange="toggleCapa('multitudes',this.checked)" style="width:auto;margin:0;">
+                        👥 Multitudes
                     </label>
                 </div>
             </div>
@@ -2728,8 +2887,8 @@ const WT_HEARTBEAT_INTERVAL_MS = 20000;
 const WT_MESSAGE_CACHE_LIMIT = 30;
 
 // Capas independientes para contenido del dashboard (no se borran con clearLayers)
-let eventosLayer, noticiasLayer, triviasLayer, encuestasLayer, ofertasLayer, transmisionesLayer;
-let capasVisibles = { eventos:true, noticias:true, trivias:true, encuestas:true, ofertas:true, transmisiones:true };
+let eventosLayer, noticiasLayer, triviasLayer, encuestasLayer, ofertasLayer, transmisionesLayer, multitudesLayer;
+let capasVisibles = { eventos:true, noticias:true, trivias:true, encuestas:true, ofertas:true, transmisiones:true, multitudes:true };
 
 // Admin: mostrar u ocultar una capa de contenido del dashboard
 function toggleCapa(tipo, visible) {
@@ -2741,6 +2900,7 @@ function toggleCapa(tipo, visible) {
         encuestas:     () => encuestasLayer,
         ofertas:       () => ofertasLayer,
         transmisiones: () => transmisionesLayer,
+        multitudes:    () => multitudesLayer,
     };
     const getLayer = layerMap[tipo];
     if (!getLayer) return;
@@ -3114,7 +3274,7 @@ function wrapPinWithTemporalBadge(svgHtml, temporalState) {
 const _CTX_PANEL_TYPE_LABELS = {
     business: '🏪 Negocio', brand: '🏷️ Marca', evento: '🎉 Evento',
     encuesta: '📋 Encuesta', noticia: '📰 Noticia', trivia: '🎯 Trivia',
-    oferta: '💰 Oferta', transmision: '📡 Transmisión'
+    oferta: '💰 Oferta', transmision: '📡 Transmisión', multitud: '👥 Multitudes'
 };
 
 const CTX_PANEL_WIDTH  = 210;
@@ -3199,6 +3359,7 @@ const LEGEND_LAYER_CONFIG = [
     { emoji: '🎯', label: 'Trivias'          },
     { emoji: '💰', label: 'Ofertas'          },
     { emoji: '📡', label: 'Transmisiones'    },
+    { emoji: '👥', label: 'Multitudes'       },
 ];
 const LEGEND_RELATION_CONFIG = [
     { color: '#00b894', dash: '6 4',  label: 'Vinculado / Alianza'  },
@@ -3637,6 +3798,7 @@ function inicializarMapa() {
     encuestasLayer    = L.layerGroup().addTo(mapa);
     ofertasLayer      = L.layerGroup().addTo(mapa);
     transmisionesLayer = L.layerGroup().addTo(mapa);
+    multitudesLayer    = L.layerGroup().addTo(mapa);
 
     mapa.on('popupclose', () => {
         clearSingleOverlays();
@@ -3736,6 +3898,7 @@ function getSelectionEmoji(kind) {
     if (kind === 'trivia') return '🎯';
     if (kind === 'oferta') return '💰';
     if (kind === 'transmision') return '📡';
+    if (kind === 'multitud') return '👥';
     return '📍';
 }
 
@@ -5389,7 +5552,7 @@ function clearRelationLines() {
 
 function getVisibleMarkersWithMeta() {
     const out = [];
-    const relationLayers = [clusterGroup, eventosLayer, encuestasLayer, noticiasLayer, triviasLayer, ofertasLayer, transmisionesLayer];
+    const relationLayers = [clusterGroup, eventosLayer, encuestasLayer, noticiasLayer, triviasLayer, ofertasLayer, transmisionesLayer, multitudesLayer];
     relationLayers.forEach(layerGroup => {
         if (!layerGroup || !layerGroup.eachLayer) return;
         layerGroup.eachLayer(layer => {
@@ -6448,6 +6611,15 @@ document.addEventListener('DOMContentLoaded', async () => {
             renderTransmisionesWidget(first, rt2.data.length > TX_DEFAULT_LIMIT);
         }
     } catch (e) { console.error('Error cargando transmisiones', e); }
+
+    // Cargar MULTITUDES
+    try {
+        const rm = await fetch('/api/multitudes.php').then(r => r.json());
+        if (rm.success && rm.data && rm.data.length > 0) {
+            mostrarMarcadoresMultitudes(rm.data);
+            renderMultitudesWidget(rm.data);
+        }
+    } catch (e) { console.error('Error cargando multitudes', e); }
 
     // Indicador de contenido cargado en el mapa
     const totalExtra = eventoMarkers.length + noticiaMarkers.length + triviaMarkers.length + encuestaMarkers.length;
@@ -8296,6 +8468,261 @@ function mostrarMarcadoresTransmisiones(transmisiones) {
         });
         transmisionesLayer.addLayer(m);
         transmisionMarkers.push(m);
+    });
+}
+
+// ─── MULTITUDES ───────────────────────────────────────────────────────────────
+
+const _mtCache = new Map();
+let   multitudMarkers = [];
+
+const MT_COLOR = '#4f46e5';
+const MT_COLOR_DARK = '#3730a3';
+
+/** Render sidebar widget with the list of multitudes */
+function renderMultitudesWidget(multitudes) {
+    const container = document.getElementById('multitudes-container');
+    const lista     = document.getElementById('multitudes-list');
+    if (!container || !lista) return;
+
+    if (!multitudes || multitudes.length === 0) {
+        lista.innerHTML = '<p style="font-size:12px;color:#888;text-align:center;padding:8px 0;margin:0;">Sin multitudes</p>';
+        return;
+    }
+
+    container.style.display = 'block';
+    lista.innerHTML = '';
+
+    multitudes.forEach(m => {
+        _mtCache.set(m.id, m);
+        const item = document.createElement('div');
+        item.className = 'mt-sidebar-item';
+        item.onclick = () => abrirMultitudModal(m);
+        item.onmouseover = () => { item.style.boxShadow = '0 3px 10px rgba(79,70,229,.22)'; item.style.transform = 'translateY(-1px)'; };
+        item.onmouseout  = () => { item.style.boxShadow = ''; item.style.transform = ''; };
+
+        const totalItems = parseInt(m.total_items || 0, 10);
+        item.innerHTML = `
+            <p class="mt-sidebar-title">👥 ${escapeHtml(m.nombre.substring(0, 36) + (m.nombre.length > 36 ? '…' : ''))}</p>
+            <p class="mt-sidebar-sub">${totalItems} elemento${totalItems !== 1 ? 's' : ''}${m.descripcion ? ' · ' + escapeHtml(m.descripcion.substring(0, 40)) + '…' : ''}</p>
+        `;
+        lista.appendChild(item);
+    });
+}
+
+/** Open the MULTITUDES floating modal, loading items on demand */
+async function abrirMultitudModal(m) {
+    _mtCache.set(m.id, m);
+
+    let panel = document.getElementById('mt-float-panel');
+    if (!panel) {
+        panel = document.createElement('div');
+        panel.id = 'mt-float-panel';
+        panel.setAttribute('role', 'dialog');
+        panel.setAttribute('aria-modal', 'false');
+        panel.setAttribute('aria-label', 'Panel MULTITUDES');
+        panel.tabIndex = -1;
+        panel.innerHTML = `
+            <div id="mt-float-panel-header">
+                <span id="mt-float-panel-title"></span>
+                <button class="mt-panel-btn" id="mt-panel-min-btn" aria-label="Minimizar" title="Minimizar">&#8212;</button>
+                <button class="mt-panel-btn" id="mt-panel-close-btn" aria-label="Cerrar" title="Cerrar">&#x2715;</button>
+            </div>
+            <div class="mt-panel-body">
+                <p id="mt-panel-desc" class="mt-panel-desc" style="display:none;"></p>
+                <div class="mt-sort-tabs">
+                    <button class="mt-sort-tab mt-tab-active" id="mt-tab-fecha"  onclick="sortMultitudItems('fecha')">📅 Por fecha</button>
+                    <button class="mt-sort-tab"               id="mt-tab-grupo" onclick="sortMultitudItems('grupo')">👤 Por grupo/artista</button>
+                </div>
+                <div class="mt-items-list" id="mt-items-list"></div>
+            </div>
+        `;
+        document.body.appendChild(panel);
+
+        // Minimize
+        const minBtn = panel.querySelector('#mt-panel-min-btn');
+        minBtn.addEventListener('click', function () {
+            const minimized = panel.classList.toggle('is-minimized');
+            minBtn.setAttribute('aria-label', minimized ? 'Restaurar' : 'Minimizar');
+            minBtn.title = minimized ? 'Restaurar' : 'Minimizar';
+            minBtn.innerHTML = minimized ? '&#9633;' : '&#8212;';
+        });
+
+        // Close
+        panel.querySelector('#mt-panel-close-btn').addEventListener('click', function () {
+            panel.style.display = 'none';
+            panel.querySelector('#mt-items-list').innerHTML = '';
+        });
+
+        // Drag
+        _initMtPanelDrag(panel, panel.querySelector('#mt-float-panel-header'));
+    }
+
+    // Title & description
+    panel.querySelector('#mt-float-panel-title').textContent = '👥 ' + m.nombre;
+    const descEl = panel.querySelector('#mt-panel-desc');
+    if (m.descripcion) {
+        descEl.textContent = m.descripcion;
+        descEl.style.display = '';
+    } else {
+        descEl.style.display = 'none';
+    }
+
+    // Reset sort to fecha
+    panel.querySelector('#mt-tab-fecha').classList.add('mt-tab-active');
+    panel.querySelector('#mt-tab-grupo').classList.remove('mt-tab-active');
+    panel._currentSort = 'fecha';
+    panel._multitudId  = m.id;
+
+    // Show loading state
+    panel.querySelector('#mt-items-list').innerHTML = '<p class="mt-empty">⏳ Cargando…</p>';
+    panel.classList.remove('is-minimized');
+    panel.style.display = 'flex';
+    panel.focus();
+
+    // Fetch items
+    try {
+        const res = await fetch('/api/multitudes.php?id=' + m.id).then(r => r.json());
+        if (res.success) {
+            // Cache items on the panel element for re-sort without re-fetch
+            panel._items = res.data.items || [];
+            _renderMtItems(panel._items, 'fecha');
+        } else {
+            panel.querySelector('#mt-items-list').innerHTML = '<p class="mt-empty">Error al cargar ítems.</p>';
+        }
+    } catch (e) {
+        console.error('Error cargando multitud', e);
+        panel.querySelector('#mt-items-list').innerHTML = '<p class="mt-empty">Error de red.</p>';
+    }
+}
+
+/** Switch sort criteria without re-fetching */
+function sortMultitudItems(criteria) {
+    const panel = document.getElementById('mt-float-panel');
+    if (!panel || !panel._items) return;
+    panel._currentSort = criteria;
+    panel.querySelector('#mt-tab-fecha').classList.toggle('mt-tab-active', criteria === 'fecha');
+    panel.querySelector('#mt-tab-grupo').classList.toggle('mt-tab-active', criteria === 'grupo');
+    _renderMtItems(panel._items, criteria);
+}
+
+function _renderMtItems(items, sortBy) {
+    const lista = document.getElementById('mt-items-list');
+    if (!lista) return;
+    if (!items || items.length === 0) {
+        lista.innerHTML = '<p class="mt-empty">Sin ítems en esta multitud.</p>';
+        return;
+    }
+
+    // Sort
+    const sorted = [...items].sort((a, b) => {
+        if (sortBy === 'grupo') {
+            const ga = (a.grupo_artista || '').toLowerCase();
+            const gb = (b.grupo_artista || '').toLowerCase();
+            if (ga < gb) return -1;
+            if (ga > gb) return  1;
+        }
+        // By date (primary or fallback)
+        const fa = a.fecha_periodo || '';
+        const fb = b.fecha_periodo || '';
+        if (fa < fb) return -1;
+        if (fa > fb) return  1;
+        return (parseInt(a.orden, 10) || 0) - (parseInt(b.orden, 10) || 0);
+    });
+
+    lista.innerHTML = '';
+    sorted.forEach(item => {
+        const a = document.createElement('a');
+        a.className = 'mt-item';
+        a.href = item.stream_url || '#';
+        a.target = '_blank';
+        a.rel = 'noopener noreferrer';
+        if (!item.stream_url) { a.removeAttribute('href'); a.style.cursor = 'default'; }
+
+        const dateStr = item.fecha_periodo
+            ? new Date(item.fecha_periodo + 'T00:00:00').toLocaleDateString('es-AR', { day:'2-digit', month:'short', year:'numeric' })
+            : '';
+
+        a.innerHTML = `
+            <span class="mt-item-icon">🎬</span>
+            <div class="mt-item-body">
+                <div class="mt-item-title">${escapeHtml(item.titulo)}</div>
+                <div class="mt-item-meta">
+                    ${item.grupo_artista ? '<span>👤 ' + escapeHtml(item.grupo_artista) + '</span>' : ''}
+                    ${dateStr            ? '<span>📅 ' + escapeHtml(dateStr)            + '</span>' : ''}
+                </div>
+                ${item.descripcion_corta ? '<div class="mt-item-desc">' + escapeHtml(item.descripcion_corta) + '</div>' : ''}
+            </div>
+            ${item.stream_url ? '<span class="mt-item-arrow">▶</span>' : ''}
+        `;
+        lista.appendChild(a);
+    });
+}
+
+function _initMtPanelDrag(panel, handle) {
+    handle.addEventListener('mousedown', function (e) {
+        if (e.target.closest('.mt-panel-btn')) return;
+        e.preventDefault();
+        const rect = panel.getBoundingClientRect();
+        const startX = e.clientX;
+        const startY = e.clientY;
+        const startRight  = window.innerWidth  - rect.right;
+        const startBottom = window.innerHeight - rect.bottom;
+        function onMove(ev) {
+            const dx = ev.clientX - startX;
+            const dy = ev.clientY - startY;
+            panel.style.right  = Math.max(0, Math.min(startRight  - dx, window.innerWidth  - 80)) + 'px';
+            panel.style.bottom = Math.max(0, Math.min(startBottom - dy, window.innerHeight - 40)) + 'px';
+        }
+        function onUp() {
+            document.removeEventListener('mousemove', onMove);
+            document.removeEventListener('mouseup',   onUp);
+        }
+        document.addEventListener('mousemove', onMove);
+        document.addEventListener('mouseup',   onUp);
+    });
+}
+
+/** Render map markers for all multitudes */
+function mostrarMarcadoresMultitudes(multitudes) {
+    multitudesLayer.clearLayers();
+    multitudMarkers = [];
+
+    multitudes.forEach(function (m) {
+        if (!m.lat || !m.lng || parseFloat(m.lat) === 0) return;
+        _mtCache.set(m.id, m);
+
+        var svg  = make3dPin('👥', MT_COLOR, 32, 44, '');
+        var sz   = calcBadgeIconSize(32, 44, false);
+        var icon = L.divIcon({ html: svg, className: '', iconSize: sz, iconAnchor: [Math.round(sz[0]/2), sz[1]], popupAnchor: [0, -(sz[1]+2)] });
+        var mk   = L.marker([parseFloat(m.lat), parseFloat(m.lng)], { icon: icon });
+        mk._mapitaMeta = { entity_type: 'multitud', entity_id: m.id || null };
+
+        var totalItems = parseInt(m.total_items || 0, 10);
+        var popHtml = '<div style="font-family:inherit;min-width:200px">'
+            + '<div style="background:linear-gradient(135deg,' + MT_COLOR + ',' + MT_COLOR_DARK + ');color:white;padding:12px;margin:-1px -1px 12px;border-radius:4px 4px 0 0">'
+            + '<strong style="font-size:14px;">👥 ' + escapeHtml(m.nombre) + '</strong></div>'
+            + '<div style="padding:0 4px 8px">';
+        if (m.descripcion) popHtml += '<p style="margin:4px 0;font-size:12px;color:#555">' + escapeHtml(m.descripcion.substring(0, 80)) + (m.descripcion.length > 80 ? '…' : '') + '</p>';
+        popHtml += '<p style="margin:4px 0;font-size:11px;color:#888;">' + totalItems + ' elemento' + (totalItems !== 1 ? 's' : '') + ' disponible' + (totalItems !== 1 ? 's' : '') + '</p>';
+        popHtml += '<button onclick="abrirMultitudModal(_mtCache.get(' + m.id + '))" style="width:100%;padding:8px;background:' + MT_COLOR + ';color:white;border:none;border-radius:8px;cursor:pointer;font-size:12px;font-weight:600;margin-top:6px;">👥 Ver MULTITUDES</button>';
+        popHtml += '</div></div>';
+
+        mk.bindPopup(popHtml, { maxWidth: 280 });
+        mk.on('mouseover', function () { showCtxPanel(mk, m, 'multitud'); });
+        mk.on('mouseout',  function () { hideCtxPanel(); });
+        mk.on('click', function (e) {
+            if (!selectionMode) return;
+            stopLeafletEvent(e);
+            mk.closePopup();
+        });
+        mk.on('preclick', function (e) {
+            if (!selectionMode) return;
+            stopLeafletEvent(e);
+        });
+
+        multitudesLayer.addLayer(mk);
+        multitudMarkers.push(mk);
     });
 }
 
