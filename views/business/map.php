@@ -6760,9 +6760,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (rm.success && rm.data && rm.data.length > 0) {
             mostrarMarcadoresMultitudes(rm.data);
             renderMultitudesWidget(rm.data);
-            // Auto-open MULTITUDES panel when arriving via a deep-link (?multitudes=1)
-            if (new URLSearchParams(window.location.search).get('multitudes') === '1' && rm.data.length > 0) {
-                abrirMultitudModal(rm.data[0]);
+            // Auto-open MULTITUDES panel when arriving via a deep-link (?multitudes=N)
+            const multParam = new URLSearchParams(window.location.search).get('multitudes');
+            const multId    = multParam ? parseInt(multParam, 10) : 0;
+            if (multId > 0 && rm.data.length > 0) {
+                // If a specific id is encoded, try to open that multitud; fallback to first
+                const target = rm.data.find(function(m){ return parseInt(m.id, 10) === multId; }) || rm.data[0];
+                abrirMultitudModal(target);
             }
         }
     } catch (e) { console.error('Error cargando multitudes', e); }
@@ -8790,11 +8794,11 @@ async function abrirMultitudModal(m) {
             panel.querySelector('#mt-items-list').innerHTML = '';
         });
 
-        // Share – generates a deep-link to this page with ?multitudes=1
+        // Share – generates a deep-link to this page with ?multitudes={id}
         panel.querySelector('#mt-panel-share-btn').addEventListener('click', function (e) {
             e.stopPropagation();
             const nombre = (panel.querySelector('#mt-float-panel-title').textContent || '').replace(/^👥\s*/, '').trim();
-            compartirMultitudes(nombre);
+            compartirMultitudes(nombre, panel._multitudId);
         });
 
         // Drag
@@ -9217,10 +9221,11 @@ function _initMtPanelDrag(panel, handle) {
     });
 }
 
-/** Share a deep-link that opens MAPITA and auto-opens the MULTITUDES panel (Option A: no specific item) */
-function compartirMultitudes(nombre) {
-    // Build a clean deep-link: current page + ?multitudes=1
-    var url   = window.location.origin + window.location.pathname + '?multitudes=1';
+/** Share a deep-link that opens MAPITA and auto-opens the MULTITUDES panel for the given id */
+function compartirMultitudes(nombre, id) {
+    // Build a clean deep-link: current page + ?multitudes={id}
+    var multId = id ? parseInt(id, 10) : 1;
+    var url   = window.location.origin + window.location.pathname + '?multitudes=' + multId;
     var texto = (nombre ? '👥 ' + nombre : '👥 MULTITUDES') + ' — MAPITA';
 
     // Use native Web Share API on mobile when available
