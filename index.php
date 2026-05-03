@@ -82,6 +82,20 @@ if (isset($routes[$uri]) && file_exists($routes[$uri])) {
     exit;
 }
 
+// ── ?multitudes=N: serve OG share page to social-media bots ──────────────────
+if ($uri === '/' && isset($_GET['multitudes']) && (int)$_GET['multitudes'] > 0) {
+    $ua    = $_SERVER['HTTP_USER_AGENT'] ?? '';
+    $isBot = (bool)preg_match(
+        '/facebookexternalhit|Facebot|WhatsApp|Twitterbot|LinkedInBot/i',
+        $ua
+    );
+    if ($isBot) {
+        require __DIR__ . '/views/multitudes/share.php';
+        exit;
+    }
+    // Non-bots: fall through to map.php (which opens the panel via JS)
+}
+
 // Default - show map
 if (file_exists(__DIR__ . '/views/business/map.php')) {
     require __DIR__ . '/views/business/map.php';

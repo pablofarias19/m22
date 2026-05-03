@@ -5,7 +5,7 @@
  * Parámetros GET:
  *   id        int     ID del recurso
  *   brand_id  int     ID de la marca (solo para type=brand)
- *   type      string  'business' | 'brand' | 'evento' | 'noticia' | 'encuesta'
+ *   type      string  'business' | 'brand' | 'evento' | 'noticia' | 'encuesta' | 'multitud'
  *                     (sin type → imagen genérica del sitio)
  *
  * Lógica de fondo:
@@ -70,7 +70,7 @@ $brandId = (int)($_GET['brand_id'] ?? 0);
 $tipoLabel = '';
 
 if (($type === 'business' && $id > 0) || ($type === 'brand' && $brandId > 0)
-    || (in_array($type, ['evento','noticia','encuesta']) && $id > 0)) {
+    || (in_array($type, ['evento','noticia','encuesta','multitud']) && $id > 0)) {
     try {
         require_once __DIR__ . '/../includes/db_helper.php';
         $db = getDbConnection();
@@ -313,6 +313,32 @@ if (($type === 'business' && $id > 0) || ($type === 'brand' && $brandId > 0)
                         if (file_exists($candidate)) { $fotoPath = $candidate; }
                     }
                 }
+            }
+
+        // ── MULTITUD ──────────────────────────────────────────────────────────
+        } elseif ($type === 'multitud' && $id > 0) {
+            $stmt = $db->prepare("
+                SELECT m.nombre, m.descripcion,
+                       COUNT(mi.id) AS total_items
+                FROM multitudes m
+                LEFT JOIN multitud_items mi ON mi.multitud_id = m.id AND mi.activo = 1
+                WHERE m.id = ? AND m.activo = 1
+                GROUP BY m.id
+                LIMIT 1
+            ");
+            $stmt->execute([$id]);
+            $row = $stmt->fetch(PDO::FETCH_ASSOC);
+            if ($row) {
+                $titulo    = $row['nombre'];
+                $tipoLabel = 'MULTITUDES';
+                $nItems    = (int)($row['total_items'] ?? 0);
+                $subtitulo = $nItems > 0
+                    ? $nItems . ($nItems === 1 ? ' transmisión' : ' transmisiones')
+                    : 'Transmisiones en vivo';
+                $detalle   = !empty($row['descripcion'])
+                    ? mb_substr(strip_tags($row['descripcion']), 0, 110)
+                    : 'Explorá transmisiones en tiempo real en Mapita · mapita.com.ar';
+                $colorAcento = [79, 70, 229];   // indigo #4f46e5
             }
         }
 
