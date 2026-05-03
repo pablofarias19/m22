@@ -7134,7 +7134,7 @@ function encuestaRenderFormulario(content, enc, encuestaId, loggedUserId) {
     }
 
     // Botón compartir en la cabecera de la encuesta
-    html += '<div style="margin-bottom:12px;"><button onclick="compartirContenido(\'encuesta\',' + (parseInt(enc.id,10)||0) + ',' + JSON.stringify(enc.titulo||'') + ',' + JSON.stringify(enc.localidad||'') + ')" style="background:none;border:1px solid #1B3B6F;color:#1B3B6F;border-radius:8px;padding:5px 12px;cursor:pointer;font-size:12px;font-weight:600;">📤 Compartir encuesta</button></div>';
+    html += '<div style="margin-bottom:12px;"><button onclick="compartirEncuesta(' + (parseInt(enc.id,10)||0) + ',\'' + (enc.titulo||'').replace(/'/g,"\\'") + '\')" style="background:none;border:1px solid #1B3B6F;color:#1B3B6F;border-radius:8px;padding:5px 12px;cursor:pointer;font-size:12px;font-weight:600;">📤 Compartir encuesta</button></div>';
 
     if (total > 0) {
         html += '<div style="font-size:11px;color:#888;margin-bottom:14px;font-weight:600;letter-spacing:0.3px;">'
@@ -7435,6 +7435,30 @@ function compartirContenido(tipo, id, titulo, localidad) {
 
     overlay.onclick = function(e){ if(e.target===overlay) overlay.remove(); };
     document.body.appendChild(overlay);
+}
+
+// ── Compartir encuesta ─────────────────────────────────────────────────────────
+function compartirEncuesta(id, titulo) {
+    id = parseInt(id, 10) || 0;
+    if (id <= 0) { return; }
+    titulo = String(titulo || '');
+    var url = window.location.origin + '/encuesta?id=' + id;
+    var txt = '📊 ' + titulo + ' — ¡Participá en esta encuesta de Mapita! ' + url;
+    if (navigator.share) {
+        navigator.share({ title: titulo, text: txt, url: url }).catch(function() {});
+    } else if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(url).then(function() {
+            if (typeof showMapToast === 'function') {
+                showMapToast('✅ ¡Enlace copiado al portapapeles!');
+            } else {
+                alert('¡Enlace copiado al portapapeles!');
+            }
+        }).catch(function() {
+            prompt('Copiá este enlace:', url);
+        });
+    } else {
+        prompt('Copiá este enlace:', url);
+    }
 }
 
 // ─── Eventos Widget ────────────────────────────────────────────────────────────
@@ -7738,7 +7762,7 @@ function mostrarMarcadoresEncuestas(encuestas) {
             popHtml += '<button onclick="abrirEncuesta(' + (parseInt(enc.id,10)||0) + ',\'' + escHtml(enc.titulo).replace(/'/g,'&#39;') + '\')" style="width:100%;padding:9px 8px;background:#f39c12;color:white;border:none;border-radius:8px;cursor:pointer;font-size:13px;font-weight:700;margin-bottom:6px;">📋 Responder</button>';
         }
         // Botón Compartir
-        popHtml += '<button onclick="compartirContenido(\'encuesta\',' + (parseInt(enc.id,10)||0) + ',' + JSON.stringify(enc.titulo||'') + ',' + JSON.stringify(enc.localidad||'') + ')" style="width:100%;padding:7px 8px;background:#fff;color:#1B3B6F;border:1.5px solid #1B3B6F;border-radius:8px;cursor:pointer;font-size:12px;font-weight:600;margin-bottom:6px;">📤 Compartir encuesta</button>';
+        popHtml += '<button onclick="compartirEncuesta(' + (parseInt(enc.id,10)||0) + ',\'' + (enc.titulo||'').replace(/'/g,"\\'") + '\')" style="width:100%;padding:7px 8px;background:#fff;color:#1B3B6F;border:1.5px solid #1B3B6F;border-radius:8px;cursor:pointer;font-size:12px;font-weight:600;margin-bottom:6px;">📤 Compartir encuesta</button>';
         popHtml += buildWTPopupSection('encuesta', enc.id, enc.titulo);
         popHtml += '</div></div>';
 
